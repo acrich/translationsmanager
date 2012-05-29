@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <adminhtml_demo_index>
+        <reference name="content">
+            <block type="demo/adminhtml_demo" name="demo" />
+        </reference>
+    </adminhtml_demo_index>
+    <demo_adminhtml_demo_newpage>
+        <reference name="content">
+            <block type="adminhtml/template" name="demo_newpage" template="demo_newpage.phtml" />
+        </reference>
+    </demo_adminhtml_demo_newpage>
+</layout>

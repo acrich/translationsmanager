@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+    </default>
+    <customer_account_create>
+        <reference name="content">
+            <block type="demo/form_register" name="demo_form_register" template="demo/register.phtml" />
+            <block type="persistent/form_remember" name="persistent.remember.me" template="persistent/remember_me.phtml" />
+            <block type="core/template" name="persistent.remember.me.tooltip" template="persistent/remember_me_tooltip.phtml" />
+        </reference>
+    </customer_account_create>
+    <demo_index_index>
+        <reference name="content">
+            <block type="demo/demo" name="demo" template="demo/demo.phtml" />
+        </reference>
+    </demo_index_index>
+</layout>

@@ -1,0 +1,8 @@
+<reference name="content">
+<block type="core/text" name="words">
+	<action method="setText">
+		<text>this is a newer text than the new text we have before.</text>
+	</action>
+</block>
+</reference>
+<remove name="sidebar" />
