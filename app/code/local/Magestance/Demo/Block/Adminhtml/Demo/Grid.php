@@ -6,41 +6,45 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
   {
       parent::__construct();
       $this->setId('demoGrid');
-      $this->setDefaultSort('demo_id');
+      $this->setDefaultSort('string');
       $this->setDefaultDir('ASC');
       $this->setSaveParametersInSession(true);
   }
 
   protected function _prepareCollection()
   {
-      $collection = Mage::getModel('demo/demo')->getCollection();
+      $collection = Mage::getModel('demo/translator')->_getAggregatedCollection();
       $this->setCollection($collection);
       return parent::_prepareCollection();
   }
 
   protected function _prepareColumns()
   {
-      $this->addColumn('demo_id', array(
-          'header'    => Mage::helper('demo')->__('ID'),
+      $this->addColumn('string', array(
+          'header'    => Mage::helper('demo')->__('String'),
           'align'     =>'right',
           'width'     => '50px',
-          'index'     => 'demo_id',
+          'index'     => 'string',
       ));
 
-      $this->addColumn('title', array(
-          'header'    => Mage::helper('demo')->__('Title'),
+      $this->addColumn('translate', array(
+          'header'    => Mage::helper('demo')->__('Translation'),
           'align'     =>'left',
-          'index'     => 'title',
+          'index'     => 'translate',
       ));
 
-	  /*
-      $this->addColumn('content', array(
-			'header'    => Mage::helper('demo')->__('Item Content'),
+      $this->addColumn('store_id', array(
+			'header'    => Mage::helper('demo')->__('Store ID'),
 			'width'     => '150px',
-			'index'     => 'content',
+			'index'     => 'store_id',
       ));
-	  */
-
+      
+      $this->addColumn('locale', array(
+      		'header'    => Mage::helper('demo')->__('Locale'),
+      		'width'     => '150px',
+      		'index'     => 'locale',
+      ));
+/*
       $this->addColumn('status', array(
           'header'    => Mage::helper('demo')->__('Status'),
           'align'     => 'left',
@@ -52,7 +56,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
               2 => 'Disabled',
           ),
       ));
-	  
+	  */
         $this->addColumn('action',
             array(
                 'header'    =>  Mage::helper('demo')->__('Action'),
@@ -80,7 +84,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 
     protected function _prepareMassaction()
     {
-        $this->setMassactionIdField('demo_id');
+        $this->setMassactionIdField('string');
         $this->getMassactionBlock()->setFormFieldName('demo');
 
         $this->getMassactionBlock()->addItem('delete', array(

@@ -1,6 +1,6 @@
 <?php
 
-class Magestance_Demo_Model_Mysql4_Demo extends Mage_Core_Model_Mysql4_Abstract
+class Magestance_Demo_Model_Entity_Demo extends Mage_Core_Model_Mysql4_Abstract
 {
     public function _construct()
     {    

@@ -20,22 +20,26 @@ CREATE TABLE {$this->getTable('demo')} (
 
     ");
 */
-$installer->addEntityType('demo_translate',Array(
+$installer->addEntityType('demo_translator',Array(
 //entity_model is the URL you'd pass into a Mage::getModel() call
-		'entity_model'          =>'core/translate',
+		'entity_model'          =>'demo/translator',
 		//blank for now
 		'attribute_model'       =>'',
 		//table refers to the resource URI complexworld/eavblogpost
 //<complexworld_resource_eav_mysql4>...<eavblogpost><table>eavblog_posts</table>
-		'table'         =>'demo/translate',
+		'table'         =>'demo/translator',
 		//blank for now, but can also be eav/entity_increment_numeric
 		'increment_model'       =>'',
 		//appears that this needs to be/can be above "1" if we're using eav/entity_increment_numeric
 		'increment_per_store'   =>'0'
 ));
 
+
 $installer->createEntityTables(
-		$this->getTable('demo/translate')
+		$this->getTable('demo/translator')
 );
 
+
 $installer->endSetup();
+
+$installer->installEntities();

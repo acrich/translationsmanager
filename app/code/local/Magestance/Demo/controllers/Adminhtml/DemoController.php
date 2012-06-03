@@ -14,12 +14,42 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function indexAction() {
 		$this->_initAction();
 		
-		$block = $this->getLayout()
-		->createBlock('demo/adminhtml_demo', 'example-block');
-		
-		$this->_addContent($block);
+		$grid = $this->getLayout()->createBlock('demo/adminhtml_demo');
+		$this->_addContent($grid);
 		
 		$this->renderLayout();
+	}
+	
+	public function migrateTranslationsAction() {
+		Mage::getModel('demo/translator')->_migrateDbTranslations();
+		$this->_redirect('*/*/index');
+	}
+	
+	public function syncTranslationsAction() {
+		$this->loadLayout();
+		
+		Mage::getModel('demo/translator')->_syncFileTranslations();
+
+		$messages = $this->getLayout()->createBlock('core/text');
+		$messages->setText('<div id="magestance-messages"></div>');
+		$this->_addContent($messages);
+		
+		$head = $this->getLayout()->getBlock('head');
+		$head->addJs('magestance/sync.js');
+		
+		$this->renderLayout();
+		
+	}
+	
+	public function syncAction() {
+		$data = $this->getRequest()->getPost();
+		switch ($data['action']) {
+			case 'translation_files_sync':
+				$output = Mage::getModel('demo/translator')->_iterateSyncJob($data['action']);
+				break;
+		}
+		
+		$this->getResponse()->setBody(json_encode($output));
 	}
 	
 	public function newpageAction() {

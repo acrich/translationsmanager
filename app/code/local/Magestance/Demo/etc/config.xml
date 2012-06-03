@@ -50,6 +50,16 @@
 						<sort_order>1</sort_order>
 						<action>adminhtml/demo/newpage</action>
 					</newpage>
+					<migrate module="demo">
+						<title>Do a Migration</title>
+						<sort_order>2</sort_order>
+						<action>adminhtml/demo/migrateTranslations</action>
+					</migrate>
+					<sync module="demo">
+						<title>Do a Sync</title>
+						<sort_order>3</sort_order>
+						<action>adminhtml/demo/syncTranslations</action>
+					</sync>
 				</children>
 			</demo>
 		</menu>
@@ -80,24 +90,24 @@
         <models>
             <demo>
                 <class>Magestance_Demo_Model</class>
-                <resourceModel>demo_mysql4</resourceModel>
+                <resourceModel>demo_entity</resourceModel>
             </demo>
-            <demo_mysql4>
-                <class>Magestance_Demo_Model_Mysql4</class>
+            <demo_entity>
+                <class>Magestance_Demo_Model_Entity</class>
                 <entities>
                     <demo>
                         <table>demo</table>
                     </demo>
-                	<translate>
-                    	<table>demo_translate</table>
-                	</translate>
+                	<translator>
+                    	<table>demo_translator</table>
+                	</translator>
                 </entities>
-            </demo_mysql4>
-            <core_resource>
+            </demo_entity>
+            <core>
             	<rewrite>
-            		<translate>Magestance_Demo_Model_Resource_Translate</translate>
+            		<translate>Magestance_Demo_Model_Translate</translate>
             	</rewrite>
-            </core_resource>
+            </core>
         </models>
         <resources>
             <demo_setup>

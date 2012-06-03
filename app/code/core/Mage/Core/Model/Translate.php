@@ -139,7 +139,6 @@ class Mage_Core_Model_Translate
         if (!$forceReload && $this->_canUseCache()) {
             $this->_saveCache();
         }
-
         return $this;
     }
 
