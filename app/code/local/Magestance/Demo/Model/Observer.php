@@ -8,44 +8,65 @@ class Magestance_Demo_Model_Observer
 		if (array_key_exists(self::FLAG_SHOW_LAYOUT, $_GET))
 		{
 			$block = $observer->getEvent()->getBlock();
+
+			$module_name = $block->getModuleName();
 			$alias = $block->getBlockAlias();
 			$template = Mage::getBaseDir() . DS . 'app' . DS . 'design' . DS . $block->getTemplateFile();
-			$model = Mage::getModel('demo/demo');
-			$model->load('page_scan_data');
-			$current_data = json_decode($model->getValue());
-			if (is_array($current_data))
-			{
-				$current_data[] = array('alias' => $alias, 'template' => $template);
-			} else {
-				$current_data = array(array('alias' => $alias, 'template' => $template));
+		
+			$model = Mage::getModel('demo/translator');
+			$register = $model->_getJobRegister();
+			$data = $register->data;
+			$message = $data->message;
+			
+			if ($alias) {
+				$message .= 'Scanned block: ' . $alias;
 			}
-			$model->setValue(json_encode($current_data));
-			$model->save();
+			if ($block->getTemplateFile()) {
+				if ($alias) {
+					$message .= ', with template: ' . $template;
+				} else {
+					$message .= 'Scanned template: ' . $template;
+				}
+			}
+			$message .= '<br />';
 			
-			
-			$my_file = file_get_contents($template);
-			if ($my_file)
+			$data->message = $message;
+			$register->data = $data;
+			$model->_setJobRegister($register);
+
+			$file = file_get_contents($template);
+			if ($file)
 			{
-				preg_match_all("/\-\>\_\_\('.*'\)/", $my_file, $matches, PREG_OFFSET_CAPTURE);
+				preg_match_all("/\-\>\_\_\('.*'(\)|,)/U", $file, $matches, PREG_OFFSET_CAPTURE);
 				foreach ($matches[0] as $match)
 				{
 					if (count($match))
 					{
-						var_dump($match);
+						$string = preg_replace("/\-\>\_\_\('(.*)'(\)|,)/U", "$1", $match[0]);
+						
+						$collection = Mage::getModel('demo/translator')
+						->getCollection()
+						->addAttributeToSelect('string')
+						->addAttributeToSelect('module')
+						->addFieldToFilter('string',array('eq'=>$string))
+						->addFieldToFilter('module',array('eq'=>$module_name));
+						
+						if (count($collection)) {
+							$item = $collection->getFirstItem();
+							$targets = $item->getTargets();
+							$targets[] = array('type' => 'template', 'path' => $data->path, 'location' => $template, 'offset' => $match[1]);
+							$collection->getFirstItem()->setTargets($targets)->save();
+						} else {
+							$item = new Magestance_Demo_Model_Translator();
+							$item->setString($string);
+							$item->setModule($module_name);
+							$item->setTarget(array(array('type' => 'template', 'path' => $data->path, 'location' => $template, 'offset' => $match[1])));
+							Mage::getModel('demo/translator')
+								->getCollection()
+								->addItem($item)->save();
+						}
 					}
 				}
-				
-
-				/* Archived:
-				 * //@todo loop through this to find all occurances in each file, and see whether there's some better way...
-				$str = strstr($my_file, "->__('");
-				$sub = substr($str, 6);
-				Mage::log($sub, null, 'shay.log');
-				$end_pos = strpos($sub, "'");
-				Mage::log($end_pos, null, 'shay.log');
-				$sub = substr($sub, 0, $end_pos);
-				Mage::log($sub, null, 'shay.log');
-				*/
 			}
 		}
 	}
@@ -53,15 +74,8 @@ class Magestance_Demo_Model_Observer
 	{
 		if (array_key_exists(self::FLAG_SHOW_LAYOUT, $_GET))
 		{
-			$state = Mage::getModel('demo/demo');
-			$state->load('page_scan_state');
-			$state->setValue('0');
-			$state->save();
-			$data = Mage::getModel('demo/demo');
-			$data->load('page_scan_data');
-			$data->setValue('');
-			$data->save();
-			Mage::log('done.', null, 'shay.log');
+			$model = Mage::getModel('demo/translator');
+			$model->_setJobRegister(array('state' => false, 'data' => array(), 'action' => 'translate_path_sync'));
 		}
 	}
 }

@@ -21,14 +21,14 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	}
 	
 	public function migrateTranslationsAction() {
-		Mage::getModel('demo/translator')->_migrateDbTranslations();
+		Mage::getModel('demo/translator')->migrateDbTranslations();
 		$this->_redirect('*/*/index');
 	}
 	
 	public function syncTranslationsAction() {
 		$this->loadLayout();
 		
-		Mage::getModel('demo/translator')->_syncFileTranslations();
+		Mage::getModel('demo/translator')->syncFileTranslations();
 
 		$messages = $this->getLayout()->createBlock('core/text');
 		$messages->setText('<div id="magestance-messages"></div>');
@@ -38,26 +38,27 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$head->addJs('magestance/sync.js');
 		
 		$this->renderLayout();
-		
 	}
 	
 	public function syncAction() {
-		$data = $this->getRequest()->getPost();
-		switch ($data['action']) {
-			case 'translation_files_sync':
-				$output = Mage::getModel('demo/translator')->_iterateSyncJob($data['action']);
-				break;
-		}
+		
+		$register = Mage::getModel('demo/translator')->_getJobRegister();
+
+		//switch ($state['action']) {
+			//case 'translation_files_sync':
+				$output = Mage::getModel('demo/translator')->iterateSyncJob($register->action);
+				//break;
+		//}		
 		
 		$this->getResponse()->setBody(json_encode($output));
 	}
 	
-	public function newpageAction() {
+	public function addpathAction() {
 		$this->loadLayout();
-		$this->_setActiveMenu('demo/newpage');	
-		$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Submit a New Page'), Mage::helper('adminhtml')->__('Submit a New Page'));		
+		$this->_setActiveMenu('demo/addpath');	
+		$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Add a New Path'), Mage::helper('adminhtml')->__('Add a New Path'));		
 		
-		$form = $this->getLayout()->createBlock('demo/adminhtml_demo_newpage');
+		$form = $this->getLayout()->createBlock('demo/adminhtml_demo_addpath');
 		$this->_addContent($form);
 		
 		$messages = $this->getLayout()->createBlock('core/text');
@@ -65,35 +66,27 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$this->_addContent($messages);
 		
 		$head = $this->getLayout()->getBlock('head');
-		//$head->addJs('magestance/newpage.js');
-		
 		$status = $this->getRequest()->getParam('status');
 		if ($status == "1")
 		{	
-			$head->addJs('magestance/getpage.js');
+			$head->addJs('magestance/sync.js');
 		}
 		
 		$this->renderLayout();
 	}
 	
-	public function getpageAction() {
+	public function initpathsyncAction() {
 		$data = $this->getRequest()->getPost();
-		$model = Mage::getModel('demo/demo');
-		$model->load('page_scan_url');
-		$model->setValue($data['path']);
-		$model->save();
-		$state = Mage::getModel('demo/demo');
-		$state->load('page_scan_state');
-		$state->setValue('1');
-		$state->save();
-		Mage::log($state->load('page_scan_state')->getValue(), null, 'shay.log');
-		$this->_redirect('*/*/newpage/status/1');
+		
+		Mage::getModel('demo/translator')->_initJobRegister('translate_path_sync', array('init' => true, 'path' => $data['path'], 'message' => ''));
+		
+		$this->_redirect('*/*/addpath/status/1');
 	}
+
 	
 	public function checkstateAction() {
 		$state = Mage::getModel('demo/demo');
 		$state->load('page_scan_state');
-		Mage::log($state->getValue(), null, 'shay.log');
 		if ($state->getValue() == '1')
 		{
 			$url = Mage::getModel('demo/demo');
@@ -109,9 +102,11 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	}
 
 	public function editAction() {
+		
+		$store_id = $this->getRequest()->getParam('store');
+		
 		$id     = $this->getRequest()->getParam('id');
-		$model  = Mage::getModel('demo/demo')->load($id);
-
+		$model  = Mage::getModel('demo/translator')->load($id);
 		if ($model->getId() || $id == 0) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
 			if (!empty($data)) {
@@ -125,10 +120,11 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 
 			$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Item Manager'), Mage::helper('adminhtml')->__('Item Manager'));
 			$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Item News'), Mage::helper('adminhtml')->__('Item News'));
-
+			
 			$this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
 			$this->_addContent($this->getLayout()->createBlock('demo/adminhtml_demo_edit'))
+				->_addLeft($this->getLayout()->createBlock('adminhtml/store_switcher'))
 				->_addLeft($this->getLayout()->createBlock('demo/adminhtml_demo_edit_tabs'));
 
 			$this->renderLayout();
@@ -145,35 +141,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function saveAction() {
 		if ($data = $this->getRequest()->getPost()) {
 			
-			if(isset($_FILES['filename']['name']) && $_FILES['filename']['name'] != '') {
-				try {	
-					/* Starting upload */	
-					$uploader = new Varien_File_Uploader('filename');
-					
-					// Any extention would work
-	           		$uploader->setAllowedExtensions(array('jpg','jpeg','gif','png'));
-					$uploader->setAllowRenameFiles(false);
-					
-					// Set the file upload mode 
-					// false -> get the file directly in the specified folder
-					// true -> get the file in the product like folders 
-					//	(file.jpg will go in something like /media/f/i/file.jpg)
-					$uploader->setFilesDispersion(false);
-							
-					// We set media as the upload dir
-					$path = Mage::getBaseDir('media') . DS ;
-					$uploader->save($path, $_FILES['filename']['name'] );
-					
-				} catch (Exception $e) {
-		      
-		        }
-	        
-		        //this way the name is saved in DB
-	  			$data['filename'] = $_FILES['filename']['name'];
-			}
-	  			
-	  			
-			$model = Mage::getModel('demo/demo');		
+			$model = Mage::getModel('demo/translator');
 			$model->setData($data)
 				->setId($this->getRequest()->getParam('id'));
 			
@@ -183,7 +151,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 						->setUpdateTime(now());
 				} else {
 					$model->setUpdateTime(now());
-				}	
+				}
 				
 				$model->save();
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('demo')->__('Item was successfully saved'));
@@ -209,7 +177,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function deleteAction() {
 		if( $this->getRequest()->getParam('id') > 0 ) {
 			try {
-				$model = Mage::getModel('demo/demo');
+				$model = Mage::getModel('demo/translator');
 				 
 				$model->setId($this->getRequest()->getParam('id'))
 					->delete();
@@ -231,7 +199,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
         } else {
             try {
                 foreach ($demoIds as $demoId) {
-                    $demo = Mage::getModel('demo/demo')->load($demoId);
+                    $demo = Mage::getModel('demo/translator')->load($demoId);
                     $demo->delete();
                 }
                 Mage::getSingleton('adminhtml/session')->addSuccess(
@@ -254,7 +222,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
         } else {
             try {
                 foreach ($demoIds as $demoId) {
-                    $demo = Mage::getSingleton('demo/demo')
+                    $demo = Mage::getSingleton('demo/translator')
                         ->load($demoId)
                         ->setStatus($this->getRequest()->getParam('status'))
                         ->setIsMassupdate(true)

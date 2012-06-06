@@ -46,9 +46,9 @@
 						<action>adminhtml/demo</action>
 					</items>
 					<newpage module="demo">
-						<title>Submit a New Page</title>
+						<title>Add a New Path</title>
 						<sort_order>1</sort_order>
-						<action>adminhtml/demo/newpage</action>
+						<action>adminhtml/demo/addpath</action>
 					</newpage>
 					<migrate module="demo">
 						<title>Do a Migration</title>

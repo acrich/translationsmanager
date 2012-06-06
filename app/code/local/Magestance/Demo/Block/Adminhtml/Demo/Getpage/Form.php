@@ -1,12 +1,12 @@
 <?php
 
-class Magestance_Demo_Block_Adminhtml_Demo_Getpage_Form extends Mage_Adminhtml_Block_Widget_Form
+class Magestance_Demo_Block_Adminhtml_Demo_Addpath_Form extends Mage_Adminhtml_Block_Widget_Form
 {
 	protected function _prepareForm()
 	{
 		$form = new Varien_Data_Form(array(
                                       'id' => 'edit_form',
-                                      'action' => $this->getUrl('*/*/getpage'),
+                                      'action' => $this->getUrl('*/*/initpathsync'),
                                       'method' => 'post',
         							  'enctype' => 'multipart/form-data'
                                    ));

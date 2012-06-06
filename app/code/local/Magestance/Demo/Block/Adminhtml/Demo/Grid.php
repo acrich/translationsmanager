@@ -20,10 +20,15 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 
   protected function _prepareColumns()
   {
+	  $this->addColumn('entity_id', array(
+  		  'header'    => Mage::helper('demo')->__('ID'),
+  		  'align'     =>'right',
+  		  'width'     => '50px',
+		  'index'     => 'entity_id',
+	  ));
       $this->addColumn('string', array(
           'header'    => Mage::helper('demo')->__('String'),
-          'align'     =>'right',
-          'width'     => '50px',
+          'align'     =>'left',
           'index'     => 'string',
       ));
 
@@ -35,16 +40,28 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 
       $this->addColumn('store_id', array(
 			'header'    => Mage::helper('demo')->__('Store ID'),
-			'width'     => '150px',
+			'width'     => '50px',
 			'index'     => 'store_id',
       ));
       
       $this->addColumn('locale', array(
       		'header'    => Mage::helper('demo')->__('Locale'),
-      		'width'     => '150px',
+      		'width'     => '50px',
       		'index'     => 'locale',
       ));
-/*
+      
+      $this->addColumn('module', array(
+      		'header'    => Mage::helper('demo')->__('Scope'),
+      		'width'     => '150px',
+      		'index'     => 'module',
+      ));
+      
+      $this->addColumn('origin', array(
+      		'header'    => Mage::helper('demo')->__('Origin'),
+      		'width'     => '150px',
+      		'index'     => 'origin',
+      ));
+
       $this->addColumn('status', array(
           'header'    => Mage::helper('demo')->__('Status'),
           'align'     => 'left',
@@ -56,7 +73,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
               2 => 'Disabled',
           ),
       ));
-	  */
+	  
         $this->addColumn('action',
             array(
                 'header'    =>  Mage::helper('demo')->__('Action'),

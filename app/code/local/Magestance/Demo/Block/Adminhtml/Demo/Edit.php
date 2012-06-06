@@ -5,7 +5,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit extends Mage_Adminhtml_Block_Wid
     public function __construct()
     {
         parent::__construct();
-                 
+        
         $this->_objectId = 'id';
         $this->_blockGroup = 'demo';
         $this->_controller = 'adminhtml_demo';
@@ -37,7 +37,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit extends Mage_Adminhtml_Block_Wid
     public function getHeaderText()
     {
         if( Mage::registry('demo_data') && Mage::registry('demo_data')->getId() ) {
-            return Mage::helper('demo')->__("Edit Item '%s'", $this->htmlEscape(Mage::registry('demo_data')->getTitle()));
+            return Mage::helper('demo')->__("Edit Item '%s'", $this->htmlEscape(Mage::registry('demo_data')->getString()));
         } else {
             return Mage::helper('demo')->__('Add Item');
         }

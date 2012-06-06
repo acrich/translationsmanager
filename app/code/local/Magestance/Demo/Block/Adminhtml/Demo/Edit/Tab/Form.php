@@ -8,18 +8,37 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
       $this->setForm($form);
       $fieldset = $form->addFieldset('demo_form', array('legend'=>Mage::helper('demo')->__('Item information')));
      
-      $fieldset->addField('title', 'text', array(
-          'label'     => Mage::helper('demo')->__('Title'),
+      $fieldset->addField('string', 'editor', array(
+      		'name'      => 'string',
+      		'label'     => Mage::helper('demo')->__('String'),
+      		'title'     => Mage::helper('demo')->__('String'),
+      		'style'     => 'width:700px; height:75px;',
+      		'wysiwyg'   => false,
+      		'required'  => true,
+      ));
+       
+      $fieldset->addField('translate', 'editor', array(
+      		'name'      => 'translate',
+      		'label'     => Mage::helper('demo')->__('Translate'),
+      		'title'     => Mage::helper('demo')->__('Translate'),
+      		'style'     => 'width:700px; height:75px;',
+      		'wysiwyg'   => false,
+      		'required'  => false,
+      ));
+      /*
+      $fieldset->addField('store_id', 'text', array(
+          'label'     => Mage::helper('demo')->__('Store Id'),
           'class'     => 'required-entry',
           'required'  => true,
-          'name'      => 'title',
+          'name'      => 'store_id',
       ));
-
-      $fieldset->addField('filename', 'file', array(
-          'label'     => Mage::helper('demo')->__('File'),
-          'required'  => false,
-          'name'      => 'filename',
-	  ));
+      */
+      $fieldset->addField('locale', 'text', array(
+      		'label'     => Mage::helper('demo')->__('Locale'),
+      		'class'     => 'required-entry',
+      		'required'  => true,
+      		'name'      => 'locale',
+      ));
 		
       $fieldset->addField('status', 'select', array(
           'label'     => Mage::helper('demo')->__('Status'),
@@ -35,15 +54,6 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
                   'label'     => Mage::helper('demo')->__('Disabled'),
               ),
           ),
-      ));
-     
-      $fieldset->addField('content', 'editor', array(
-          'name'      => 'content',
-          'label'     => Mage::helper('demo')->__('Content'),
-          'title'     => Mage::helper('demo')->__('Content'),
-          'style'     => 'width:700px; height:500px;',
-          'wysiwyg'   => false,
-          'required'  => true,
       ));
      
       if ( Mage::getSingleton('adminhtml/session')->getDemoData() )

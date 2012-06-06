@@ -30,34 +30,57 @@ class Magestance_Demo_Model_Translator extends Mage_Core_Model_Abstract
 		return $data;
 	}
 	
-	public function _forwardJob($register)
+	public function _forwardJob()
 	{
-		$model = Mage::getModel('demo/demo')->load($register);
-		$data = json_decode($model->getValue());
-		$element = array_pop($data);
-		$model->setValue(json_encode($data))->save();
+		$register = $this->_getJobRegister();
+		$element = array_pop($register->data);
+		$this->_setJobRegister($register);
+		
 		return $element;
 	}
 	
-	public function _iterateSyncJob($job)
+	public function iterateSyncJob($action)
 	{
-		$data = $this->_forwardJob($job);
+		$output = array();
 		
-		if ($data) {
-			switch ($job) {
-				case 'translation_files_sync':
-					$this->_checkFile($data);
+		switch ($action) {
+			case 'translation_files_sync':
+				$data = $this->_forwardJob();
+				if ($data) {
+					$output['data'] = $this->_checkFile($data);
+					$output['state'] = true;
 					break;
-			}
-			return array('state' => true);
-		} else {
-			return array('state' => false);
+				} else {
+					$this->_cleanJobRegister();
+					$output['state'] = false;
+					break;
+				}
+			case 'translate_path_sync':
+				$register = $this->_getJobRegister();
+				$output['state'] = $register->state;
+				if ($output['state']) {
+					$data = $register->data;
+					$output['data'] = $data->message;
+					if ($data->init) {
+						$output['url'] = $data->path;
+						$data->init = false;
+						$register->data = $data;
+						$this->_setJobRegister($register);
+					}
+					break;
+				} else {
+					$this->_cleanJobRegister();
+					break;
+				}
 		}
+		
+		return $output;
 	}
 	
 	public function _checkFile($data)
 	{
-		$collection = Mage::getModel('demo/translator')->getCollection();
+		$collection = $this->getCollection()->load();
+		$response = '';
 		
 		$file = Mage::getBaseDir('locale') . DS . $data->locale . DS . $data->fileName;
 		if (file_exists($file)) {
@@ -67,17 +90,51 @@ class Magestance_Demo_Model_Translator extends Mage_Core_Model_Abstract
 				$item->setString($string);
 				$item->setTranslate($translate);
 				$item->setStoreId(0);
-				$item->setLocale($locale);
+				$item->setLocale($data->locale);
+				$item->setModule($data->key);
+				$item->setOrigin($file);
+				$item->setTargets(array());
 				$collection->addItem($item);
 			}
+			$response = 'Successfully scanned: ' . $file . '<br />';
 		}
 		$collection->save();
+		
+		return $response;
 	}
 	
-	public function _syncFileTranslations()
-	{
-		$registry = array();
+	public function _initJobRegister($action, $data) {
 		
+		$register = array('action' => $action, 'data' => $data, 'state' => true);
+		
+		$this->_setJobRegister($register);
+	}
+	
+	public function _getJobRegister() {
+		$register = Mage::getModel('demo/demo')
+		->load('job_register')
+		->getValue();
+		
+		return json_decode($register);
+	}
+	
+	public function _setJobRegister($register) {
+		Mage::getModel('demo/demo')
+		->load('job_register')
+		->setValue(json_encode($register))
+		->save();
+	}
+	
+	public function _cleanJobRegister()
+	{
+		$model = Mage::getModel('demo/demo')
+		->load('job_register')
+		->setValue(array('state' => false))
+		->save();
+	}
+	
+	public function syncFileTranslations()
+	{		
 		$areas = array('frontend', 'adminhtml', 'install');
 	    $files = array();
 	    foreach ($areas as $area) {
@@ -95,28 +152,29 @@ class Magestance_Demo_Model_Translator extends Mage_Core_Model_Abstract
 	    	}
 	    }
 	    
+	    $data = array();
 	    $stores = Mage::app()->getLocale()->getOptionLocales();
 	    foreach ($stores as $store) {
 	    	if (file_exists(Mage::getBaseDir('locale') . DS . $store['value'])) {
-	    		foreach ($files as $file) {
-	    			$registry[] = array('locale' => $store['value'], 'fileName' => $file);
+	    		foreach ($files as $key => $file) {
+	    			$data[] = array('locale' => $store['value'], 'fileName' => $file, 'key' => $key);
 	    		}
 	    	}
 	    }
 	    
-	    Mage::getModel('demo/demo')->load('translation_files_sync')->setValue(json_encode($registry))->save();
+	    $this->_initJobRegister('translation_files_sync', $data);
 	}
 	
-	public function _migrateDbTranslations()
+	public function migrateDbTranslations()
 	{
-		$collection = $this->getCollection();
+		$collection = $this->getCollection()->load();
 		
 		$model = Mage::getModel('core/translate');
 		$resource = $model->getResource();
 		$adapter = $this->getResource()->getReadConnection();
 		
 		if (!$adapter) {
-			Mage::log('could not get the adapter.', null, 'shay.log');
+			Mage::log('could not get the adapter.');
 			return array();
 		}
 		
@@ -148,7 +206,7 @@ class Magestance_Demo_Model_Translator extends Mage_Core_Model_Abstract
 		
 		$adapter = $this->getResource()->getReadConnection();
 		if (!$adapter) {
-			Mage::log('could not get the adapter.', null, 'shay.log');
+			Mage::log('could not get the adapter.');
 			return array();
 		}
 		

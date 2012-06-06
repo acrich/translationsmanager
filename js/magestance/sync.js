@@ -9,14 +9,14 @@ Sync.prototype = {
         run : function(){
         	new Ajax.Request(Sync.prototype.checkUrl,{
                 method: 'post',
-                parameters: {
-                    action: 'translation_files_sync'
-                },
                 onSuccess: function(transport){
                 	var data = transport.responseText.evalJSON();
+                	if (data.url) {
+                		window.open(data.url + '?magestanceScan');
+                	}
                 	if (data.state) {
                 		if (data.data) {
-                			$('magestance-messages').update(data.data);
+                			$('magestance-messages').insert(data.data);
                 		}
                 		Sync.prototype.run();
                 	} else {
