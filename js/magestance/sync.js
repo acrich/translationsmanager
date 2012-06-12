@@ -14,10 +14,10 @@ Sync.prototype = {
                 	if (data.url) {
                 		window.open(data.url + '?magestanceScan');
                 	}
+            		if (data.data) {
+            			$('magestance-messages').insert(data.data);
+            		}
                 	if (data.state) {
-                		if (data.data) {
-                			$('magestance-messages').insert(data.data);
-                		}
                 		Sync.prototype.run();
                 	} else {
                 		$('magestance-messages').insert(' and done.');

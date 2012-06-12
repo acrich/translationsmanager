@@ -3,43 +3,61 @@
 $installer = $this;
 
 $installer->startSetup();
-/*
+
 $installer->run("
 
--- DROP TABLE IF EXISTS {$this->getTable('demo')};
-CREATE TABLE {$this->getTable('demo')} (
-  `demo_id` int(11) unsigned NOT NULL auto_increment,
-  `title` varchar(255) NOT NULL default '',
-  `filename` varchar(255) NOT NULL default '',
-  `content` text NOT NULL default '',
-  `status` smallint(6) NOT NULL default '0',
-  `created_time` datetime NULL,
-  `update_time` datetime NULL,
-  PRIMARY KEY (`demo_id`)
+-- DROP TABLE IF EXISTS `{$installer->getTable('demo_cache')}`;
+CREATE TABLE `{$installer->getTable('demo_cache')}` (
+  `id` int(11) NOT NULL auto_increment,
+  `name` varchar(255) NULL,
+  `register` blob NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
     ");
-*/
-$installer->addEntityType('demo_translator',Array(
-//entity_model is the URL you'd pass into a Mage::getModel() call
-		'entity_model'          =>'demo/translator',
-		//blank for now
-		'attribute_model'       =>'',
-		//table refers to the resource URI complexworld/eavblogpost
-//<complexworld_resource_eav_mysql4>...<eavblogpost><table>eavblog_posts</table>
-		'table'         =>'demo/translator',
-		//blank for now, but can also be eav/entity_increment_numeric
-		'increment_model'       =>'',
-		//appears that this needs to be/can be above "1" if we're using eav/entity_increment_numeric
-		'increment_per_store'   =>'0'
-));
 
+$installer->run("
+		CREATE TABLE IF NOT EXISTS `{$installer->getTable('demo/string')}` (
+		`string_id` int(11) NOT NULL auto_increment,
+		`string` text,
+		`module` text,
+		`parameters` text,
+		`status` smallint(5) default 0,
+		PRIMARY KEY  (`string_id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	");
 
-$installer->createEntityTables(
-		$this->getTable('demo/translator')
-);
+$installer->run("
+		CREATE TABLE IF NOT EXISTS `{$installer->getTable('demo/translation')}` (
+		`translation_id` int(11) NOT NULL auto_increment,
+		`translation` text,
+		`locale` text,
+		`store_id` smallint(5) unsigned NOT NULL default 0,
+		`group_id` smallint(5) unsigned NOT NULL default 0,
+		`string_id` int(11) NOT NULL,
+		PRIMARY KEY (`translation_id`),
+		INDEX (`string_id`),
+		FOREIGN KEY (`string_id`) REFERENCES {$installer->getTable('demo/string')}(`string_id`)
+                      ON DELETE CASCADE
+                      ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	");
 
+$installer->run("
+		CREATE TABLE IF NOT EXISTS `{$installer->getTable('demo/path')}` (
+		`path_id` int(11) NOT NULL auto_increment,
+		`path` text,
+		`file` text,
+		`offset` int(11),
+		`string_id` int(11) NOT NULL,
+		PRIMARY KEY (`path_id`),
+		INDEX (`string_id`),
+		FOREIGN KEY (`string_id`) REFERENCES {$installer->getTable('demo/string')}(`string_id`)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		");
 
 $installer->endSetup();
 
-$installer->installEntities();
+//$installer->installEntities();

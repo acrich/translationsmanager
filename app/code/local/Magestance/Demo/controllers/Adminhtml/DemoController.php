@@ -20,16 +20,19 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$this->renderLayout();
 	}
 	
-	public function migrateTranslationsAction() {
-		Mage::getModel('demo/translator')->migrateDbTranslations();
+	public function migrateCoreDbAction() {
+		Mage::getModel('demo/translate')->migrateCoreDb();
 		$this->_redirect('*/*/index');
 	}
 	
-	public function syncTranslationsAction() {
+	public function importCsvFilesAction() {
 		$this->loadLayout();
 		
-		Mage::getModel('demo/translator')->syncFileTranslations();
-
+		Mage::helper('demo/sync')->init('csv_pairs_scan');
+		
+		Mage::helper('demo/queue')->init('csv_files_pairs');
+		Mage::helper('demo/importer')->pushCsvFilesToQueue();
+		
 		$messages = $this->getLayout()->createBlock('core/text');
 		$messages->setText('<div id="magestance-messages"></div>');
 		$this->_addContent($messages);
@@ -41,64 +44,38 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	}
 	
 	public function syncAction() {
-		
-		$register = Mage::getModel('demo/translator')->_getJobRegister();
-
-		//switch ($state['action']) {
-			//case 'translation_files_sync':
-				$output = Mage::getModel('demo/translator')->iterateSyncJob($register->action);
-				//break;
-		//}		
-		
+		$output = Mage::helper('demo/sync')->iterator();
 		$this->getResponse()->setBody(json_encode($output));
 	}
 	
 	public function addpathAction() {
 		$this->loadLayout();
-		$this->_setActiveMenu('demo/addpath');	
+		$this->_setActiveMenu('demo/addpath');
 		$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Add a New Path'), Mage::helper('adminhtml')->__('Add a New Path'));		
 		
 		$form = $this->getLayout()->createBlock('demo/adminhtml_demo_addpath');
 		$this->_addContent($form);
 		
-		$messages = $this->getLayout()->createBlock('core/text');
-		$messages->setText('<div id="magestance-messages"></div>');
-		$this->_addContent($messages);
-		
 		$head = $this->getLayout()->getBlock('head');
 		$status = $this->getRequest()->getParam('status');
 		if ($status == "1")
-		{	
+		{
+			$messages = $this->getLayout()->createBlock('core/text');
+			$messages->setText('<div id="magestance-messages">Progress:<br /></div>');
+			$this->_addContent($messages);
 			$head->addJs('magestance/sync.js');
 		}
 		
 		$this->renderLayout();
 	}
 	
-	public function initpathsyncAction() {
+	public function addpathresponseAction() {
 		$data = $this->getRequest()->getPost();
 		
-		Mage::getModel('demo/translator')->_initJobRegister('translate_path_sync', array('init' => true, 'path' => $data['path'], 'message' => ''));
-		
-		$this->_redirect('*/*/addpath/status/1');
-	}
+		Mage::helper('demo/sync')->init('add_path');
+		Mage::helper('demo/sync')->replace('add_path', array('go_to_url' => true, 'path' => $data['path'], 'message' => ''));
 
-	
-	public function checkstateAction() {
-		$state = Mage::getModel('demo/demo');
-		$state->load('page_scan_state');
-		if ($state->getValue() == '1')
-		{
-			$url = Mage::getModel('demo/demo');
-			$url->load('page_scan_url');
-			$data = Mage::getModel('demo/demo');
-			$data->load('page_scan_data');
-			$this->getResponse()->setBody(json_encode(array('state' => true, 'url' => $url->getValue(), 'data' => $data->getValue())));
-		} else {
-			$data = Mage::getModel('demo/demo');
-			$data->load('page_scan_data');
-			$this->getResponse()->setBody(json_encode(array('state' => false, 'data' => $data->getValue())));
-		}
+		$this->_redirect('*/*/addpath/status/1');
 	}
 
 	public function editAction() {
@@ -106,7 +83,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$store_id = $this->getRequest()->getParam('store');
 		
 		$id     = $this->getRequest()->getParam('id');
-		$model  = Mage::getModel('demo/translator')->load($id);
+		$model  = Mage::getModel('demo/translation')->load($id);
 		if ($model->getId() || $id == 0) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
 			if (!empty($data)) {
@@ -141,7 +118,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function saveAction() {
 		if ($data = $this->getRequest()->getPost()) {
 			
-			$model = Mage::getModel('demo/translator');
+			$model = Mage::getModel('demo/translation');
 			$model->setData($data)
 				->setId($this->getRequest()->getParam('id'));
 			
@@ -177,7 +154,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function deleteAction() {
 		if( $this->getRequest()->getParam('id') > 0 ) {
 			try {
-				$model = Mage::getModel('demo/translator');
+				$model = Mage::getModel('demo/translation');
 				 
 				$model->setId($this->getRequest()->getParam('id'))
 					->delete();
@@ -199,7 +176,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
         } else {
             try {
                 foreach ($demoIds as $demoId) {
-                    $demo = Mage::getModel('demo/translator')->load($demoId);
+                    $demo = Mage::getModel('demo/translation')->load($demoId);
                     $demo->delete();
                 }
                 Mage::getSingleton('adminhtml/session')->addSuccess(
@@ -222,7 +199,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
         } else {
             try {
                 foreach ($demoIds as $demoId) {
-                    $demo = Mage::getSingleton('demo/translator')
+                    $demo = Mage::getSingleton('demo/translation')
                         ->load($demoId)
                         ->setStatus($this->getRequest()->getParam('status'))
                         ->setIsMassupdate(true)

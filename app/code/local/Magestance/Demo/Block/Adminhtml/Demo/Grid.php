@@ -13,53 +13,36 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 
   protected function _prepareCollection()
   {
-      $collection = Mage::getModel('demo/translator')->_getAggregatedCollection();
+      $collection = Mage::getModel('demo/translate')->getEntriesCollection();
       $this->setCollection($collection);
       return parent::_prepareCollection();
   }
 
   protected function _prepareColumns()
   {
-	  $this->addColumn('entity_id', array(
+	  $this->addColumn('translation_id', array(
   		  'header'    => Mage::helper('demo')->__('ID'),
   		  'align'     =>'right',
   		  'width'     => '50px',
-		  'index'     => 'entity_id',
+		  'index'     => 'id',
 	  ));
+	  
       $this->addColumn('string', array(
           'header'    => Mage::helper('demo')->__('String'),
           'align'     =>'left',
           'index'     => 'string',
       ));
 
-      $this->addColumn('translate', array(
+      $this->addColumn('translation', array(
           'header'    => Mage::helper('demo')->__('Translation'),
           'align'     =>'left',
-          'index'     => 'translate',
-      ));
-
-      $this->addColumn('store_id', array(
-			'header'    => Mage::helper('demo')->__('Store ID'),
-			'width'     => '50px',
-			'index'     => 'store_id',
-      ));
-      
-      $this->addColumn('locale', array(
-      		'header'    => Mage::helper('demo')->__('Locale'),
-      		'width'     => '50px',
-      		'index'     => 'locale',
+          'index'     => 'translation',
       ));
       
       $this->addColumn('module', array(
       		'header'    => Mage::helper('demo')->__('Scope'),
       		'width'     => '150px',
       		'index'     => 'module',
-      ));
-      
-      $this->addColumn('origin', array(
-      		'header'    => Mage::helper('demo')->__('Origin'),
-      		'width'     => '150px',
-      		'index'     => 'origin',
       ));
 
       $this->addColumn('status', array(

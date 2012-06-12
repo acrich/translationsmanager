@@ -53,12 +53,12 @@
 					<migrate module="demo">
 						<title>Do a Migration</title>
 						<sort_order>2</sort_order>
-						<action>adminhtml/demo/migrateTranslations</action>
+						<action>adminhtml/demo/migrateCoreDb</action>
 					</migrate>
 					<sync module="demo">
 						<title>Do a Sync</title>
 						<sort_order>3</sort_order>
-						<action>adminhtml/demo/syncTranslations</action>
+						<action>adminhtml/demo/importCsvFiles</action>
 					</sync>
 				</children>
 			</demo>
@@ -90,19 +90,25 @@
         <models>
             <demo>
                 <class>Magestance_Demo_Model</class>
-                <resourceModel>demo_entity</resourceModel>
+                <resourceModel>demo_mysql4</resourceModel>
             </demo>
-            <demo_entity>
-                <class>Magestance_Demo_Model_Entity</class>
+            <demo_mysql4>
+                <class>Magestance_Demo_Model_Mysql4</class>
                 <entities>
-                    <demo>
-                        <table>demo</table>
-                    </demo>
-                	<translator>
-                    	<table>demo_translator</table>
-                	</translator>
+                    <cache>
+                        <table>demo_cache</table>
+                    </cache>
+                	<translation>
+                    	<table>demo_translation</table>
+                	</translation>
+                 	<string>
+                    	<table>demo_string</table>
+                	</string>
+                	<path>
+                    	<table>demo_path</table>
+                	</path>
                 </entities>
-            </demo_entity>
+            </demo_mysql4>
             <core>
             	<rewrite>
             		<translate>Magestance_Demo_Model_Translate</translate>
@@ -113,7 +119,7 @@
             <demo_setup>
                 <setup>
                     <module>Magestance_Demo</module>
-                    <class>Magestance_Demo_Model_Entity_Setup</class>
+                    <class>Magestance_Demo_Model_Resource_Mysql4_Setup</class>
                 </setup>
                 <connection>
                     <use>core_setup</use>

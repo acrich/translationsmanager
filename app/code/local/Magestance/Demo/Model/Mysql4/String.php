@@ -1,19 +1,11 @@
 <?php
-class Magestance_Demo_Model_Entity_Translator extends Mage_Eav_Model_Entity_Abstract
+class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstract
 {
-	/**
-	 * Define main table
-	 *
-	 */
-	protected function _construct()
-	{
-		$resource = Mage::getSingleton('core/resource');
-		$this->setType('demo_translator');
-		$this->setConnection(
-				$resource->getConnection('demo_read'),
-				$resource->getConnection('demo_write')
-		);
-	}
+    
+	public function _construct()
+    {    
+        $this->_init('demo/string', 'string_id');
+    }
 	
 	/**
 	 * Retrieve translation array for store / locale code
@@ -33,12 +25,12 @@ class Magestance_Demo_Model_Entity_Translator extends Mage_Eav_Model_Entity_Abst
 			$storeId = Mage::app()->getStore()->getId();
 		}
 		
-		$collection = Mage::getModel('demo/translator')
+		$collection = Mage::getModel('demo/translation')
 				->getCollection()
-				->addAttributeToSelect('string')
-				->addAttributeToSelect('translate')
-				->addAttributeToSelect('locale')
-				->addAttributeToSelect('store_id')
+				//->addAttributeToSelect('string_id')
+				//->addAttributeToSelect('translation')
+				//->addAttributeToSelect('locale')
+				//->addAttributeToSelect('store_id')
 				->addFieldToFilter('store_id',array('in'=>array(0,$storeId)))
 				->addFieldToFilter('locale',array('eq'=>$locale))
 				->setOrder('store_id');
@@ -46,7 +38,8 @@ class Magestance_Demo_Model_Entity_Translator extends Mage_Eav_Model_Entity_Abst
 		$results = array();
 		foreach ($collection as $item)
 		{
-			$results[$item['string']] = $item['translate'];
+			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
+			$results[$string] = $item['translation'];
 		}
 		
 		return $results;
@@ -72,19 +65,20 @@ class Magestance_Demo_Model_Entity_Translator extends Mage_Eav_Model_Entity_Abst
 		if (empty($strings)) {
 			return array();
 		}
-		
-		$collection = Mage::getModel('demo/translator')
+		//@todo get all the string_ids through the strings array and use them in the query.
+		$collection = Mage::getModel('demo/translation')
 				->getCollection()
-				->addAttributeToSelect('string')
-				->addAttributeToSelect('translate')
-				->addAttributeToSelect('store_id')
+				//->addAttributeToSelect('string_id')
+				//->addAttributeToSelect('translation')
+				//->addAttributeToSelect('store_id')
 				->addFieldToFilter('store_id',array('eq'=>$storeId))
-				->addFieldToFilter('string',array('in'=>array($strings)));
+				->addFieldToFilter('string_id',array('in'=>array($strings)));
 
 		$results = array();
 		foreach ($collection as $item)
 		{
-			$results[$item['string']] = $item['translate'];
+			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
+			$results[$string] = $item['translation'];
 		}
 		
 		return $results;

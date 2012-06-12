@@ -13,10 +13,10 @@ class Magestance_Demo_Model_Observer
 			$alias = $block->getBlockAlias();
 			$template = Mage::getBaseDir() . DS . 'app' . DS . 'design' . DS . $block->getTemplateFile();
 		
-			$model = Mage::getModel('demo/translator');
-			$register = $model->_getJobRegister();
-			$data = $register->data;
-			$message = $data->message;
+			$queue = Mage::helper('demo/queue')->pop('sync');
+			
+			$queue = Mage::helper('demo/queue')->popAndPush('sync');
+			$message = $queue->_data['message'];
 			
 			if ($alias) {
 				$message .= 'Scanned block: ' . $alias;
@@ -30,10 +30,11 @@ class Magestance_Demo_Model_Observer
 			}
 			$message .= '<br />';
 			
-			$data->message = $message;
-			$register->data = $data;
-			$model->_setJobRegister($register);
-
+			$queue->_data['message'] = $message;
+			Mage::helper('demo/queue')->replace('sync', $queue);
+			
+			$path = $queue->_data['path'];
+			
 			$file = file_get_contents($template);
 			if ($file)
 			{
@@ -43,28 +44,9 @@ class Magestance_Demo_Model_Observer
 					if (count($match))
 					{
 						$string = preg_replace("/\-\>\_\_\('(.*)'(\)|,)/U", "$1", $match[0]);
-						
-						$collection = Mage::getModel('demo/translator')
-						->getCollection()
-						->addAttributeToSelect('string')
-						->addAttributeToSelect('module')
-						->addFieldToFilter('string',array('eq'=>$string))
-						->addFieldToFilter('module',array('eq'=>$module_name));
-						
-						if (count($collection)) {
-							$item = $collection->getFirstItem();
-							$targets = $item->getTargets();
-							$targets[] = array('type' => 'template', 'path' => $data->path, 'location' => $template, 'offset' => $match[1]);
-							$collection->getFirstItem()->setTargets($targets)->save();
-						} else {
-							$item = new Magestance_Demo_Model_Translator();
-							$item->setString($string);
-							$item->setModule($module_name);
-							$item->setTarget(array(array('type' => 'template', 'path' => $data->path, 'location' => $template, 'offset' => $match[1])));
-							Mage::getModel('demo/translator')
-								->getCollection()
-								->addItem($item)->save();
-						}
+						$string_id = Mage::getModel('demo/string')->createItem($string, $module_name);
+
+						Mage::getModel('demo/path')->createItem($path, $template, $match[1], $string_id);
 					}
 				}
 			}
@@ -74,8 +56,7 @@ class Magestance_Demo_Model_Observer
 	{
 		if (array_key_exists(self::FLAG_SHOW_LAYOUT, $_GET))
 		{
-			$model = Mage::getModel('demo/translator');
-			$model->_setJobRegister(array('state' => false, 'data' => array(), 'action' => 'translate_path_sync'));
+			Mage::helper('demo/sync')->close();
 		}
 	}
 }

@@ -6,7 +6,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Addpath_Form extends Mage_Adminhtml_B
 	{
 		$form = new Varien_Data_Form(array(
                                       'id' => 'edit_form',
-                                      'action' => $this->getUrl('*/*/initpathsync'),
+                                      'action' => $this->getUrl('*/*/addpathresponse'),
                                       'method' => 'post',
         							  'enctype' => 'multipart/form-data'
                                    ));
