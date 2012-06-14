@@ -34,6 +34,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
           'align'     =>'left',
           'index'     => 'string',
       	  'filter_index' => 'demo_string.string',
+      	  'renderer' => 'Magestance_Demo_Block_Adminhtml_Demo_Renderer_String'
       ));
 
       $this->addColumn('translation', array(
@@ -41,6 +42,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
           'align'     =>'left',
           'index'     => 'translation',
       	  'filter_index' => 'main_table.translation',
+      	  'renderer' => 'Magestance_Demo_Block_Adminhtml_Demo_Renderer_Translation'
       ));
       
       $this->addColumn('module', array(

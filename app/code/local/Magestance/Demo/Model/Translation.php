@@ -29,6 +29,7 @@ class Magestance_Demo_Model_Translation extends Mage_Core_Model_Abstract
 	
 	public function getIdByStringId($string_id)
 	{
+		//@todo condition this with store ids too.
 		$items = $this->getCollection()->addFieldToFilter('string_id', $string_id)->load();
 		
 		$id = count($items) ? $items->getFirstItem()->getTranslationId() : false;
