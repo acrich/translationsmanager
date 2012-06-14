@@ -8,13 +8,13 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 		$this->_init('demo/string');
 	}
 	
-	public function createItem($string, $module = null)
+	public function createItem($item)
 	{
-		$string_id = $this->getIdByString($string);
+		$string_id = $this->getIdByString($item['string']);
 		if (!$string_id) {
-			$this->setString(serialize($string));
-			if ($module) {
-				$this->setModule($module);
+			$this->setString(serialize($item['string']));
+			if (!is_null($item['module'])) {
+				$this->setModule($item['module']);
 			}
 			$this->save();
 			$string_id = $this->getStringId();
@@ -30,5 +30,11 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 		$id = count($items) ? $items->getFirstItem()->getStringId() : false;
 		
 		return $id;
+	}
+	
+	public function getItemByString($string)
+	{
+		$id = getIdByString($string);
+		return $this->load($id);
 	}
 }

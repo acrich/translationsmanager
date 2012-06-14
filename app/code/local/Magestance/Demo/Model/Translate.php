@@ -43,7 +43,7 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     
     public function addEntry($item)
     {
-    	$item['string_id'] = Mage::getModel('demo/string')->createItem($item['string']);
+    	$item['string_id'] = Mage::getModel('demo/string')->createItem($item);
     	Mage::getModel('demo/translation')->createItem($item);
     }
     
@@ -52,5 +52,19 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     	foreach ($batch as $item) {
     		$this->addEntry($item);
     	}
+    }
+    
+    public function getEntryByString($string)
+    {
+    	$string_item = getItemByString($string);
+    	$translation_model = Mage::getModel('demo/translation');
+    	$translation_item = $translation_model->load($translation_model->getIdByStringId($string_item['string_id']));
+    	
+    	return array(
+    				'string' => $string_item['module'] . self::SCOPE_SEPARATOR . $string_item['string'],
+    				'translate' => $translation_item['translation'],
+    				'store_id' => $translation_item['store_id'],
+    				'locale' => $translation_item['locale']
+    			);
     }
 }

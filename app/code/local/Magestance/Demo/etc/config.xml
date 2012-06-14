@@ -107,14 +107,13 @@
                 	<path>
                     	<table>demo_path</table>
                 	</path>
-                	<translate>
-                    	<table>demo_translate</table>
-                	</translate>
                 </entities>
             </demo_mysql4>
             <core>
             	<rewrite>
             		<translate>Magestance_Demo_Model_Translate</translate>
+            		<translate_string>Magestance_Demo_Model_Translate_String</translate_string>
+            		<translate_inline>Magestance_Demo_Model_Translate_Inline</translate_inline>
             	</rewrite>
             </core>
         </models>

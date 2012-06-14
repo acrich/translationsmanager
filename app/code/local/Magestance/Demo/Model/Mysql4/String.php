@@ -35,6 +35,7 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		foreach ($collection as $item)
 		{
 			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
+			Mage::log($string);
 			$results[unserialize($string)] = unserialize($item['translation']);
 		}
 		
