@@ -10,8 +10,8 @@ class Magestance_Demo_Model_Path extends Mage_Core_Model_Abstract
 	
 	public function createItem($path, $file, $offset, $string_id)
 	{
-		$path_id = $this->getPathId($path, $file, $offset, $string_id);
-
+		$path_id = $this->getMatchingId($path, $file, $offset, $string_id);
+		
 		if (!$path_id) {
 			$this->setPath($path);
 			$this->setFile($file);
@@ -24,7 +24,7 @@ class Magestance_Demo_Model_Path extends Mage_Core_Model_Abstract
 		return $path_id;
 	}
 	
-	public function getPathId($path, $file, $offset, $string_id)
+	public function getMatchingId($path, $file, $offset, $string_id)
 	{
 		$items = $this->getCollection()
 				->addFieldToFilter('path', $path)

@@ -12,7 +12,7 @@ class Magestance_Demo_Model_Translation extends Mage_Core_Model_Abstract
 	public function createItem($item)
 	{
 		if (!$this->getIdByStringId($item['string_id'])) {
-			$this->setTranslation($item['translation']);
+			$this->setTranslation(serialize($item['translation']));
 			$this->setStringId($item['string_id']);
 			if (array_key_exists('locale', $item)) {
 				$this->setLocale($item['locale']);

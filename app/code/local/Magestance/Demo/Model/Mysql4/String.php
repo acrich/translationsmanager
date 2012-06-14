@@ -27,10 +27,6 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		
 		$collection = Mage::getModel('demo/translation')
 				->getCollection()
-				//->addAttributeToSelect('string_id')
-				//->addAttributeToSelect('translation')
-				//->addAttributeToSelect('locale')
-				//->addAttributeToSelect('store_id')
 				->addFieldToFilter('store_id',array('in'=>array(0,$storeId)))
 				->addFieldToFilter('locale',array('eq'=>$locale))
 				->setOrder('store_id');
@@ -39,7 +35,7 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		foreach ($collection as $item)
 		{
 			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
-			$results[$string] = $item['translation'];
+			$results[unserialize($string)] = unserialize($item['translation']);
 		}
 		
 		return $results;
@@ -68,9 +64,6 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		//@todo get all the string_ids through the strings array and use them in the query.
 		$collection = Mage::getModel('demo/translation')
 				->getCollection()
-				//->addAttributeToSelect('string_id')
-				//->addAttributeToSelect('translation')
-				//->addAttributeToSelect('store_id')
 				->addFieldToFilter('store_id',array('eq'=>$storeId))
 				->addFieldToFilter('string_id',array('in'=>array($strings)));
 
@@ -78,7 +71,7 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		foreach ($collection as $item)
 		{
 			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
-			$results[$string] = $item['translation'];
+			$results[unserialize($string)] = unserialize($item['translation']);
 		}
 		
 		return $results;

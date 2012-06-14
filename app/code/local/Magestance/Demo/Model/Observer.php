@@ -13,10 +13,9 @@ class Magestance_Demo_Model_Observer
 			$alias = $block->getBlockAlias();
 			$template = Mage::getBaseDir() . DS . 'app' . DS . 'design' . DS . $block->getTemplateFile();
 		
-			$queue = Mage::helper('demo/queue')->pop('sync');
+			$queue = Mage::helper('demo/queue')->getFirst('sync');
 			
-			$queue = Mage::helper('demo/queue')->popAndPush('sync');
-			$message = $queue->_data['message'];
+			$message = $queue['data']['message'];
 			
 			if ($alias) {
 				$message .= 'Scanned block: ' . $alias;
@@ -30,10 +29,11 @@ class Magestance_Demo_Model_Observer
 			}
 			$message .= '<br />';
 			
-			$queue->_data['message'] = $message;
-			Mage::helper('demo/queue')->replace('sync', $queue);
+			$queue['data']['message'] = $message;
 			
-			$path = $queue->_data['path'];
+			$path = $queue['data']['path'];
+
+			Mage::helper('demo/queue')->setFirst('sync', $queue);
 			
 			$file = file_get_contents($template);
 			if ($file)

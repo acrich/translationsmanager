@@ -73,7 +73,10 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$data = $this->getRequest()->getPost();
 		
 		Mage::helper('demo/sync')->init('add_path');
-		Mage::helper('demo/sync')->replace('add_path', array('go_to_url' => true, 'path' => $data['path'], 'message' => ''));
+		$register = Mage::helper('demo/queue')->pop('sync');
+
+		$register['data'] = array('go_to_url' => true, 'path' => $data['path'], 'message' => '');
+		Mage::helper('demo/queue')->push('sync', $register);
 
 		$this->_redirect('*/*/addpath/status/1');
 	}

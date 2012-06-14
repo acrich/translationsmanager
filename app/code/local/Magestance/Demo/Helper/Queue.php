@@ -3,8 +3,21 @@
 class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 {	
 	public function init($queue_id) {
+		
 		$data = array();
-		Mage::getModel('demo/cache')->createItem($queue_id, serialize($data));
+		
+		$model = Mage::getModel('demo/cache')
+			->getCollection()
+			->addFieldToFilter('name', $queue_id);
+		
+		if (count($model)) {
+			$model->getLastItem()->setRegister(serialize($data))->save();
+		} else {
+			Mage::getModel('demo/cache')->createItem($queue_id, serialize($data));
+		}
+		
+		
+		
 	}
 	
 	public function prepareBatches($queue_id, $batch_length) {
@@ -20,6 +33,7 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 	}
 	
 	public function getBatch($queue_id) {
+		//@todo remove the hardcoded queue name.
 		$model = Mage::getModel('demo/cache')->getCollection()
 			->addFieldToFilter('name', 'csv_files_pairs')
 			->getLastItem();
@@ -35,33 +49,36 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 	public function push($queue_id, $data) {
 		$model = Mage::getModel('demo/cache')->getCollection()
 			->addFieldToFilter('name', $queue_id)
-			->getFirstItem();
+			->getLastItem();
 		
 		$register = unserialize($model->getRegister());
-		
-		$register[] = $data;
 
+		array_push($register, $data);
+		
 		$model->setRegister(serialize($register))->save();
 	}
 	
 	public function pushMultiple($queue_id, $data) {
 		$model = Mage::getModel('demo/cache')->getCollection()
 			->addFieldToFilter('name', $queue_id)
-			->getFirstItem();
+			->getLastItem();
 		
 		$register = unserialize($model->getRegister());
 
-		$new_register = array_merge($register, (array)$data);
-		
-		$model->setRegister(serialize($new_register))->save();
+		//@todo see if this would work with some designated function like merge.
+		foreach ($data as $item) {
+			array_push($register, $item);
+		}
+
+		$model->setRegister(serialize($register))->save();
 	}
 	
 	public function pop($queue_id) {
 		$model = Mage::getModel('demo/cache')->getCollection()
 			->addFieldToFilter('name', $queue_id)
-			->getFirstItem();
+			->getLastItem();
 		
-		$register = unserialize($queue->getRegister());
+		$register = unserialize($model->getRegister());
 	
 		$element = array_pop($register);
 	
@@ -70,10 +87,10 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 		return $element;
 	}
 	
-	public function popAndPush($queue_id) {
+	public function getFirst($queue_id) {
 		$model = Mage::getModel('demo/cache')->getCollection()
 			->addFieldToFilter('name', $queue_id)
-			->getFirstItem();
+			->getLastItem();
 		
 		$register = unserialize($model->getRegister());
 
@@ -84,17 +101,17 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 		$data = array();
 		$model = Mage::getModel('demo/cache')->getCollection()
 			->addFieldToFilter('name', $queue_id)
-			->getFirstItem()
+			->getLastItem()
 			->setRegister(serialize($data))
 			->save();
 	}
 	
-	public function replace($queue_id, $replacement) {
+	public function setFirst($queue_id, $replacement) {
 		Mage::getModel('demo/cache')
 			->getCollection()
 			->addFieldToFilter('name', $queue_id)
 			->getLastItem()
-			->setRegister(serialize($replacement))
+			->setRegister(serialize(array($replacement)))
 			->save();
 	}
 }

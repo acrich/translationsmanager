@@ -15,8 +15,7 @@ class Magestance_Demo_Helper_Sync extends Mage_Core_Helper_Abstract
 		$queue_model = Mage::helper('demo/queue');
 		$output = array();
 		
-		$queue = $queue_model->popAndPush('sync');
-		$queue = (array)$queue;
+		$queue = $queue_model->getFirst('sync');
 
 		$output['state'] = $queue['state'];
 
@@ -39,16 +38,18 @@ class Magestance_Demo_Helper_Sync extends Mage_Core_Helper_Abstract
 					if ($queue['data']['go_to_url']) {
 						$output['url'] = $queue['data']['path'];
 						$queue['data']['go_to_url'] = false;
-						$queue_model->replace('sync', $queue);
+						$queue_model->setFirst('sync', $queue);
 					}
 					break;
 		}
-	
+		
 		return $output;
 	}
 	
 	public function close()
 	{
-		Mage::helper('demo/queue')->replace('sync', array('state' => false, 'action' => ''));
+		$register = Mage::helper('demo/queue')->pop('sync');
+		$register['state'] = false;
+		Mage::helper('demo/queue')->push('sync', $register);
 	}
 }

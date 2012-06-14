@@ -107,6 +107,9 @@
                 	<path>
                     	<table>demo_path</table>
                 	</path>
+                	<translate>
+                    	<table>demo_translate</table>
+                	</translate>
                 </entities>
             </demo_mysql4>
             <core>

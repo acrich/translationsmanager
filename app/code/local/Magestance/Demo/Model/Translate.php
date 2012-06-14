@@ -34,6 +34,7 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     	$data = $adapter->fetchAll($select);
     
     	foreach ($data as $item) {
+    		$item['translation'] = $item['translate'];
     		$this->addEntry($item);
     	}
 
@@ -51,28 +52,5 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     	foreach ($batch as $item) {
     		$this->addEntry($item);
     	}
-    }
-    
-    public function getEntriesCollection()
-    {
-    	$aggregated = new Varien_Data_Collection();
-    
-    	$store_id = Mage::helper('demo')->getStoreId();
-    
-    	$strings = Mage::getModel('demo/string')->getCollection();
-    	foreach ($strings as $string) {
-    		$translation = Mage::getModel('demo/translation')
-    			->getCollection()
-    			->addFieldToFilter('string_id', $string->getId())
-    			->getFirstItem();
-    		$item = new Varien_Object();
-    		$item->setData($string->getData());
-    		$item->setTranslation($translation->getTranslation());
-    		$item->setId($translation->getTranslationId());
-    		$aggregated->addItem($item);
-    	}
-    	$size = $aggregated->load()->getSize();
-    	Mage::log($aggregated, null, 'shay.log');
-    	return $aggregated;
     }
 }

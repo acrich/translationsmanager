@@ -13,7 +13,8 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 
   protected function _prepareCollection()
   {
-      $collection = Mage::getModel('demo/translate')->getEntriesCollection();
+      $collection = Mage::getModel('demo/translation')->getCollection();
+      $collection->getSelect()->joinLeft('demo_string', 'main_table.string_id = demo_string.string_id',array('string', 'module', 'status'));
       $this->setCollection($collection);
       return parent::_prepareCollection();
   }
@@ -25,18 +26,21 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
   		  'align'     =>'right',
   		  'width'     => '50px',
 		  'index'     => 'id',
+	  	  'filter_index' => 'main_table.id',
 	  ));
 	  
       $this->addColumn('string', array(
           'header'    => Mage::helper('demo')->__('String'),
           'align'     =>'left',
           'index'     => 'string',
+      	  'filter_index' => 'demo_string.string',
       ));
 
       $this->addColumn('translation', array(
           'header'    => Mage::helper('demo')->__('Translation'),
           'align'     =>'left',
           'index'     => 'translation',
+      	  'filter_index' => 'main_table.translation',
       ));
       
       $this->addColumn('module', array(

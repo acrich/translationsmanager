@@ -15,7 +15,7 @@ Sync.prototype = {
                 		window.open(data.url + '?magestanceScan');
                 	}
             		if (data.data) {
-            			$('magestance-messages').insert(data.data);
+            			$('magestance-messages').update(data.data);
             		}
                 	if (data.state) {
                 		Sync.prototype.run();

@@ -12,7 +12,7 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 	{
 		$string_id = $this->getIdByString($string);
 		if (!$string_id) {
-			$this->setString($string);
+			$this->setString(serialize($string));
 			if ($module) {
 				$this->setModule($module);
 			}
@@ -24,8 +24,9 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 	
 	public function getIdByString($string)
 	{
-		$items = $this->getCollection()->addFieldToFilter('string', $string)->load();
-		
+		$col = $this->getCollection();
+		$col->getSelect()->where('string = ?', serialize($string));
+		$items = $col->load();
 		$id = count($items) ? $items->getFirstItem()->getStringId() : false;
 		
 		return $id;
