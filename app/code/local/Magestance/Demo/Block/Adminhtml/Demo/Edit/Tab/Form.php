@@ -16,28 +16,21 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
       		'wysiwyg'   => false,
       		'required'  => true,
       ));
+      
+      $fieldset->addField('module', 'text', array(
+      		'name'      => 'module',
+      		'label'     => Mage::helper('demo')->__('Module'),
+      		'title'     => Mage::helper('demo')->__('Module'),
+      		'required'  => false,
+      ));
        
-      $fieldset->addField('translate', 'editor', array(
-      		'name'      => 'translate',
-      		'label'     => Mage::helper('demo')->__('Translate'),
-      		'title'     => Mage::helper('demo')->__('Translate'),
+      $fieldset->addField('translation', 'editor', array(
+      		'name'      => 'translation',
+      		'label'     => Mage::helper('demo')->__('Translation'),
+      		'title'     => Mage::helper('demo')->__('Translation'),
       		'style'     => 'width:700px; height:75px;',
       		'wysiwyg'   => false,
       		'required'  => false,
-      ));
-      /*
-      $fieldset->addField('store_id', 'text', array(
-          'label'     => Mage::helper('demo')->__('Store Id'),
-          'class'     => 'required-entry',
-          'required'  => true,
-          'name'      => 'store_id',
-      ));
-      */
-      $fieldset->addField('locale', 'text', array(
-      		'label'     => Mage::helper('demo')->__('Locale'),
-      		'class'     => 'required-entry',
-      		'required'  => true,
-      		'name'      => 'locale',
       ));
 		
       $fieldset->addField('status', 'select', array(
@@ -55,6 +48,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
               ),
           ),
       ));
+      
      
       if ( Mage::getSingleton('adminhtml/session')->getDemoData() )
       {
@@ -62,6 +56,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
           Mage::getSingleton('adminhtml/session')->setDemoData(null);
       } elseif ( Mage::registry('demo_data') ) {
           $form->setValues(Mage::registry('demo_data')->getData());
+          $form->getElement('string')->setDisabled(1);
       }
       return parent::_prepareForm();
   }

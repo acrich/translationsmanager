@@ -13,6 +13,7 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 		$string_id = $this->getIdByString($item['string']);
 		if (!$string_id) {
 			$this->setString(serialize($item['string']));
+			$this->setStatus(true);
 			if (!is_null($item['module'])) {
 				$this->setModule($item['module']);
 			}

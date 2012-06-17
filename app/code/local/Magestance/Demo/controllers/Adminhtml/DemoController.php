@@ -15,7 +15,8 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$this->_initAction();
 		
 		$grid = $this->getLayout()->createBlock('demo/adminhtml_demo');
-		$this->_addContent($grid);
+		$this->_addContent($this->getLayout()->createBlock('adminhtml/store_switcher'))
+			->_addContent($grid);
 		
 		$this->renderLayout();
 	}
@@ -86,13 +87,28 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 		$store_id = $this->getRequest()->getParam('store');
 		
 		$id     = $this->getRequest()->getParam('id');
-		$model  = Mage::getModel('demo/translation')->load($id);
+		$model  = Mage::getModel('demo/string')->load($id);
+		
+		$string = $model->getString();
+		$model->setString(unserialize($string));
+		
 		if ($model->getId() || $id == 0) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
 			if (!empty($data)) {
 				$model->setData($data);
 			}
-
+			
+			$translation_id = Mage::getModel('demo/translation')->getIdByParams($model->getId(), $store_id);
+			if ($translation_id) {
+				$translation = Mage::getModel('demo/translation')->load($translation_id)->getTranslation();	
+				$translation = unserialize($translation);
+			} else {
+				$translation_id = 0;
+				$translation = '';
+			}
+			$model->setTranslationId($translation_id)
+					->setTranslation($translation);
+			
 			Mage::register('demo_data', $model);
 
 			$this->loadLayout();
@@ -120,25 +136,26 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
  
 	public function saveAction() {
 		if ($data = $this->getRequest()->getPost()) {
-			
-			$model = Mage::getModel('demo/translation');
-			$model->setData($data)
-				->setId($this->getRequest()->getParam('id'));
-			
 			try {
-				if ($model->getCreatedTime == NULL || $model->getUpdateTime() == NULL) {
-					$model->setCreatedTime(now())
-						->setUpdateTime(now());
-				} else {
-					$model->setUpdateTime(now());
+				$string_id = $this->getRequest()->getParam('id');
+				if ($string_id != 0) {
+					$data['string_id'] = $string_id;
 				}
 				
-				$model->save();
+				$store_id = $this->getRequest()->getParam('store');
+				if (!$store_id) {
+					$store_id = 0;
+				}
+				
+				$data['store_id'] = $store_id;
+				
+				$model = Mage::getModel('demo/translate')->addEntryWithId($data);
+
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('demo')->__('Item was successfully saved'));
 				Mage::getSingleton('adminhtml/session')->setFormData(false);
 
 				if ($this->getRequest()->getParam('back')) {
-					$this->_redirect('*/*/edit', array('id' => $model->getId()));
+					$this->_redirect('*/*/edit', array('id' => $string_id, 'store' => $store_id));
 					return;
 				}
 				$this->_redirect('*/*/');
@@ -157,11 +174,8 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function deleteAction() {
 		if( $this->getRequest()->getParam('id') > 0 ) {
 			try {
-				$model = Mage::getModel('demo/translation');
-				 
-				$model->setId($this->getRequest()->getParam('id'))
-					->delete();
-					 
+				$model = Mage::getModel('demo/translate')
+					->deleteEntry($this->getRequest()->getParam('id'));
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('adminhtml')->__('Item was successfully deleted'));
 				$this->_redirect('*/*/');
 			} catch (Exception $e) {
@@ -179,8 +193,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
         } else {
             try {
                 foreach ($demoIds as $demoId) {
-                    $demo = Mage::getModel('demo/translation')->load($demoId);
-                    $demo->delete();
+                    $demo = Mage::getModel('demo/translate')->deleteEntry($demoId);
                 }
                 Mage::getSingleton('adminhtml/session')->addSuccess(
                     Mage::helper('adminhtml')->__(
@@ -202,7 +215,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
         } else {
             try {
                 foreach ($demoIds as $demoId) {
-                    $demo = Mage::getSingleton('demo/translation')
+                    $demo = Mage::getSingleton('demo/string')
                         ->load($demoId)
                         ->setStatus($this->getRequest()->getParam('status'))
                         ->setIsMassupdate(true)

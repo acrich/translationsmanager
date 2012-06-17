@@ -6,7 +6,10 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Form extends Mage_Adminhtml_Bloc
   {
       $form = new Varien_Data_Form(array(
                                       'id' => 'edit_form',
-                                      'action' => $this->getUrl('*/*/save', array('id' => $this->getRequest()->getParam('id'))),
+                                      'action' => $this->getUrl('*/*/save', array(
+                                      		'id' => $this->getRequest()->getParam('id'),
+                                      		'store' => $this->getRequest()->getParam('store')
+                                      		)),
                                       'method' => 'post',
         							  'enctype' => 'multipart/form-data'
                                    )

@@ -4,6 +4,6 @@ class Magestance_Demo_Block_Adminhtml_Demo_Renderer_Translation extends Mage_Adm
 	public function render(Varien_Object $row)
 	{
 		$value =  $row->getData($this->getColumn()->getIndex());
-		return unserialize($value);	
+		return unserialize($value);
 	}
 }

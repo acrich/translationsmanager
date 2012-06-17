@@ -10,30 +10,38 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
       $this->setDefaultDir('ASC');
       $this->setSaveParametersInSession(true);
   }
+  
+  protected function _getStore()
+  {
+  	$storeId = (int) $this->getRequest()->getParam('store', 0);
+  	return Mage::app()->getStore($storeId);
+  }
 
   protected function _prepareCollection()
   {
-      $collection = Mage::getModel('demo/translation')->getCollection();
-      $collection->getSelect()->joinLeft('demo_string', 'main_table.string_id = demo_string.string_id',array('string', 'module', 'status'));
+	  $store = $this->_getStore();
+      $collection = Mage::getModel('demo/string')->getCollection();
+      $collection->getSelect()->joinLeft('demo_translation', 'main_table.string_id = demo_translation.string_id AND demo_translation.store_id = ' . $store->getId(),array('translation'));
+
       $this->setCollection($collection);
       return parent::_prepareCollection();
   }
 
   protected function _prepareColumns()
   {
-	  $this->addColumn('translation_id', array(
+	  $this->addColumn('string_id', array(
   		  'header'    => Mage::helper('demo')->__('ID'),
   		  'align'     =>'right',
   		  'width'     => '50px',
-		  'index'     => 'id',
-	  	  'filter_index' => 'main_table.id',
+		  'index'     => 'string_id',
+	  	  'filter_index' => 'main_table.string_id',
 	  ));
 	  
       $this->addColumn('string', array(
           'header'    => Mage::helper('demo')->__('String'),
           'align'     =>'left',
           'index'     => 'string',
-      	  'filter_index' => 'demo_string.string',
+      	  'filter_index' => 'main_table.string',
       	  'renderer' => 'Magestance_Demo_Block_Adminhtml_Demo_Renderer_String'
       ));
 
@@ -41,7 +49,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
           'header'    => Mage::helper('demo')->__('Translation'),
           'align'     =>'left',
           'index'     => 'translation',
-      	  'filter_index' => 'main_table.translation',
+      	  'filter_index' => 'demo_translation.translation',
       	  'renderer' => 'Magestance_Demo_Block_Adminhtml_Demo_Renderer_Translation'
       ));
       
@@ -49,13 +57,33 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
       		'header'    => Mage::helper('demo')->__('Scope'),
       		'width'     => '150px',
       		'index'     => 'module',
+      		'filter_index' => 'main_table.module',
       ));
+      
+  		/**
+         * Check is single store mode
+         */
+      
+        if (!Mage::app()->isSingleStoreMode()) {
+            $this->addColumn('store_id', array(
+                'header'        => Mage::helper('demo')->__('Store View'),
+                'index'         => 'store_id',
+            	'filter_index' => 'demo_translation.store_id',
+                'type'          => 'store',
+                'store_all'     => true,
+                'store_view'    => true,
+                'sortable'      => true,
+                'filter_condition_callback'
+                                => array($this, '_filterStoreCondition'),
+            ));
+        }
 
       $this->addColumn('status', array(
           'header'    => Mage::helper('demo')->__('Status'),
           'align'     => 'left',
           'width'     => '80px',
           'index'     => 'status',
+      	  'filter_index' => 'main_table.status',
           'type'      => 'options',
           'options'   => array(
               1 => 'Enabled',
@@ -84,8 +112,23 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 		
 		$this->addExportType('*/*/exportCsv', Mage::helper('demo')->__('CSV'));
 		$this->addExportType('*/*/exportXml', Mage::helper('demo')->__('XML'));
-	  
+		
       return parent::_prepareColumns();
+  }
+  
+  protected function _afterLoadCollection()
+  {
+  	$this->getCollection()->walk('afterLoad');
+  	parent::_afterLoadCollection();
+  }
+  
+  protected function _filterStoreCondition($collection, $column)
+  {
+  	if (!$value = $column->getFilter()->getValue()) {
+  		return;
+  	}
+  
+  	$this->getCollection()->addStoreFilter($value);
   }
 
     protected function _prepareMassaction()
@@ -120,7 +163,10 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
 
   public function getRowUrl($row)
   {
-      return $this->getUrl('*/*/edit', array('id' => $row->getId()));
+      return $this->getUrl('*/*/edit', array(
+      			'store'=>$this->getRequest()->getParam('store'), 
+      			'id' => $row->getId()
+      		));
   }
 
 }
