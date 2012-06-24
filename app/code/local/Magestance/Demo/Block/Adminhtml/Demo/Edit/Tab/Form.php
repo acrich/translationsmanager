@@ -8,6 +8,8 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
       $this->setForm($form);
       $fieldset = $form->addFieldset('demo_form', array('legend'=>Mage::helper('demo')->__('Item information')));
      
+      $fieldset->addType('table', 'Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Field_Table');
+      
       $fieldset->addField('string', 'editor', array(
       		'name'      => 'string',
       		'label'     => Mage::helper('demo')->__('String'),
@@ -17,19 +19,26 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
       		'required'  => true,
       ));
       
-      $fieldset->addField('module', 'text', array(
-      		'name'      => 'module',
-      		'label'     => Mage::helper('demo')->__('Module'),
-      		'title'     => Mage::helper('demo')->__('Module'),
+      $fieldset->addField('parameters', 'table', array(
+      		'name'      => 'translation',
+      		'label'     => Mage::helper('demo')->__('Parameters'),
+      		'title'     => Mage::helper('demo')->__('Parameters'),
       		'required'  => false,
       ));
-       
+      
       $fieldset->addField('translation', 'editor', array(
       		'name'      => 'translation',
       		'label'     => Mage::helper('demo')->__('Translation'),
       		'title'     => Mage::helper('demo')->__('Translation'),
       		'style'     => 'width:700px; height:75px;',
       		'wysiwyg'   => false,
+      		'required'  => false,
+      ));
+      
+      $fieldset->addField('module', 'text', array(
+      		'name'      => 'module',
+      		'label'     => Mage::helper('demo')->__('Module'),
+      		'title'     => Mage::helper('demo')->__('Module'),
       		'required'  => false,
       ));
 		

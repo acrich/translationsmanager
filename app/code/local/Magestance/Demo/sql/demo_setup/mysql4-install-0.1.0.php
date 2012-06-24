@@ -21,7 +21,7 @@ $installer->run("
 		`string_id` int(11) NOT NULL auto_increment,
 		`string` text,
 		`module` text,
-		`parameters` text,
+		`parameters` blob NULL,
 		`status` smallint(5) default 0,
 		PRIMARY KEY  (`string_id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8;

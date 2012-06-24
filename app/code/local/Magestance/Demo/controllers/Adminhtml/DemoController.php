@@ -137,6 +137,16 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function saveAction() {
 		if ($data = $this->getRequest()->getPost()) {
 			try {
+				$params = explode('&&&', $data['params'], -1);
+				$data['param'] = array();
+				foreach ($params as $param) {
+					$param = explode('>>>', $param);
+					if (array_key_exists($param[0], $data['param']) && is_array($data['param'][$param[0]])) {
+						$data['param'][$param[0]][$param[1]] = $param[2];
+					} else {
+						$data['param'][$param[0]] = array($param[1] => $param[2]);
+					}
+				}
 				$string_id = $this->getRequest()->getParam('id');
 				if ($string_id != 0) {
 					$data['string_id'] = $string_id;

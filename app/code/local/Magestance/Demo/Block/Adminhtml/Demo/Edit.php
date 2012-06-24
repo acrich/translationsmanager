@@ -11,6 +11,7 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit extends Mage_Adminhtml_Block_Wid
         $this->_controller = 'adminhtml_demo';
         
         $this->_updateButton('save', 'label', Mage::helper('demo')->__('Save Item'));
+        $this->_updateButton('save', 'onclick', 'processTable()');
         $this->_updateButton('delete', 'label', Mage::helper('demo')->__('Delete Item'));
 		
         $this->_addButton('saveandcontinue', array(

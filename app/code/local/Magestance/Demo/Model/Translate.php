@@ -9,6 +9,39 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     }
     
     /**
+     * Initialization translation data
+     *
+     * @param   string $area
+     * @return  Magestance_Demo_Model_Translate
+     */
+    public function init($area, $forceReload = false)
+    {
+    	$this->setConfig(array(parent::CONFIG_KEY_AREA=>$area));
+    
+    	$this->_translateInline = Mage::getSingleton('core/translate_inline')
+    	->isAllowed($area=='adminhtml' ? 'admin' : null);
+    
+    	if (!$forceReload) {
+    		if ($this->_canUseCache()) {
+    			$this->_data = $this->_loadCache();
+    			if ($this->_data !== false) {
+    				return $this;
+    			}
+    		}
+    		Mage::app()->removeCache($this->getCacheId());
+    	}
+    
+    	$this->_data = array();
+    
+    	$this->_loadDbTranslation($forceReload);
+    
+    	if (!$forceReload && $this->_canUseCache()) {
+    		$this->_saveCache();
+    	}
+    	return $this;
+    }
+    
+    /**
      * Retrieve DB resource model
      *
      * @return unknown
@@ -26,9 +59,9 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
      */
     public function translate($args)
     {
+    	$text = array_shift($args);
     	if (array_key_exists('magestanceScan', $_GET))
 		{
-	    	$text = array_shift($args);
 	    	if (!(is_string($text) && ''==$text)
 	    			&& !is_null($text)
 	    			&& !(is_bool($text) && false===$text)
@@ -37,40 +70,52 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
 		    	if ($text instanceof Mage_Core_Model_Translate_Expr) {
 		    		$module = $text->getModule();
 		    		$text = $text->getText();
-		    		
-		    		$string_id = Mage::getModel('demo/string')->createItem(array(
-										'string' => $text, 
-										'module' => $module
-									));
-		    		$queue = Mage::helper('demo/queue')->getFirst('sync');
-		    		$path = $queue['data']['path'];
-					Mage::getModel('demo/path')->createItem(array(
-								'path' => $path,
-								'string_id' => $string_id
-							));
 		    	} else {
 		    		if (!empty($_REQUEST['theme'])) {
 		    			$module = 'frontend/default/'.$_REQUEST['theme'];
 		    		} else {
 		    			$module = 'frontend/default/default';
 		    		}
-		    		$string_id = Mage::getModel('demo/string')->createItem(array(
-		    				'string' => $text,
-		    				'module' => $module
-		    		));
-		    		$queue = Mage::helper('demo/queue')->getFirst('sync');
-		    		$path = $queue['data']['path'];
-		    		Mage::getModel('demo/path')->createItem(array(
-								'path' => $path,
-								'string_id' => $string_id
-							));
 		    	}
+	    		$string_id = Mage::getModel('demo/string')->createItem(array(
+	    				'string' => $text,
+	    				'module' => $module,
+	    		));
+	    		$queue = Mage::helper('demo/queue')->getFirst('sync');
+	    		$path = $queue['data']['path'];
+	    		Mage::getModel('demo/path')->createItem(array(
+							'path' => $path,
+							'string_id' => $string_id
+						));
 	    	}
-	    
-	    	array_unshift($args, $text);
 		}
-    	    
-    	return parent::translate($args);
+    	
+		//@todo handle args here.
+		if ($text instanceof Mage_Core_Model_Translate_Expr) {
+			$text = $text->getText();
+		}
+		$string = Mage::getModel('demo/string')->getItemByString($text);
+		$params = unserialize($string->getParameters());
+		$args2 = $args;
+		if (is_array($params)) {
+			foreach ($params as $key => $param) {
+				if (!$param['hardcoded']) {
+					if ($param['orig_position'] != $param['position']) {
+						$args2[$param['orig_position']] = $args[$param['position']];
+					}
+					if ($param['value'] != '') {
+						$callback = function($matches) {
+							return Mage::getModel('core/variable')->loadByCode($matches[1])->getValue('html');
+						};
+						$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
+						$args2[$param['position']] = $param['value'];
+					}
+				}
+			}
+		}
+		array_unshift($args2, $text);
+		
+    	return parent::translate($args2);
     }
     
     public function migrateCoreDb()
@@ -122,6 +167,7 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     		$model->setStatus($item['status']);
     	}
     	$model->save();
+    	Mage::getModel('demo/string')->updateItem($item);
     	Mage::getModel('demo/translation')->createItem($item);
     }
     
