@@ -71,7 +71,6 @@ class Magestance_Demo_Helper_Importer extends Mage_Core_Helper_Abstract
 				}
 			}
 		}
-
 		Mage::helper('demo/queue')->setFirst('csv_files_pairs', $data);
 		Mage::helper('demo/queue')->prepareBatches('csv_files_pairs', 30);
 	}

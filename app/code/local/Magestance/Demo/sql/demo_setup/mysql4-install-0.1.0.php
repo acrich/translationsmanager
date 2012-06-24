@@ -10,7 +10,7 @@ $installer->run("
 CREATE TABLE `{$installer->getTable('demo_cache')}` (
   `id` int(11) NOT NULL auto_increment,
   `name` varchar(255) NULL,
-  `register` blob NULL,
+  `register` longblob NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

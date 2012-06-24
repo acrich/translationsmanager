@@ -13,11 +13,11 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 		if (count($model)) {
 			$model->getLastItem()->setRegister(serialize($data))->save();
 		} else {
-			Mage::getModel('demo/cache')->createItem($queue_id, serialize($data));
+			Mage::getModel('demo/cache')->setData(array(
+						'name' => $queue_id,
+						'register' => serialize($data)
+					))->save();
 		}
-		
-		
-		
 	}
 	
 	public function prepareBatches($queue_id, $batch_length) {
@@ -27,9 +27,9 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 		
 		$register = unserialize($model->getRegister());
 		
-		$register = array_chunk($register, $batch_length);
+		$register = array_chunk($register[0], $batch_length);
 
-		$model->setRegister(serialize($register))->save();
+		$model->setRegister(serialize(array($register)))->save();
 	}
 	
 	public function getBatch($queue_id) {
@@ -39,7 +39,7 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 			->getLastItem();
 
 		$register = unserialize($model->getRegister());
-		$batch = array_pop($register);
+		$batch = array_pop($register[0]);
 
 		$model->setRegister(serialize($register))->save();
 
@@ -111,7 +111,7 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 			->getCollection()
 			->addFieldToFilter('name', $queue_id)
 			->getLastItem()
-			->setRegister(serialize(array($replacement)))
+			->setData('register', serialize(array($replacement)))
 			->save();
 	}
 }
