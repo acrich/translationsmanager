@@ -90,11 +90,12 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
 	    	}
 		}
     	
-		//@todo handle args here.
 		if ($text instanceof Mage_Core_Model_Translate_Expr) {
-			$text = $text->getText();
+			$string = $text->getText();
+		} else {
+			$string = $text;
 		}
-		$string = Mage::getModel('demo/string')->getItemByString($text);
+		$string = Mage::getModel('demo/string')->getItemByString($string);
 		$params = unserialize($string->getParameters());
 		$args2 = $args;
 		if (is_array($params)) {
