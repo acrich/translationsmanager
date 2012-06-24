@@ -281,6 +281,7 @@ class Mage_Core_Model_Translate
     protected function _loadDbTranslation($forceReload = false)
     {
         $arr = $this->getResource()->getTranslationArray(null, $this->getLocale());
+        Mage::log($arr, null, 'shay.log');
         $this->_addData($arr, $this->getConfig(self::CONFIG_KEY_STORE), $forceReload);
         return $this;
     }
@@ -381,7 +382,7 @@ class Mage_Core_Model_Translate
     public function translate($args)
     {
         $text = array_shift($args);
-		Mage::log($text, null, 'events.log');
+
         if (is_string($text) && ''==$text
             || is_null($text)
             || is_bool($text) && false===$text

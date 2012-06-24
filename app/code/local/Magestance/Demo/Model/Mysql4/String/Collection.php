@@ -56,16 +56,9 @@ class Magestance_Demo_Model_Mysql4_String_Collection extends Mage_Core_Model_Mys
 			$select = $connection->select()
 			->from(array('cps'=>$this->getTable('demo/translation')), array('string_id', 'store_id'))
 			->where('cps.string_id IN (?)', $items);
-			/*
-			$stores = Mage::app()->getStores(false, true);
-			$default_id = current($stores)->getId();
-			*/
 			if ($results = $connection->fetchAll($select)) {
 				$storeIds = array();
 				foreach ($results as $record) {
-					/*if ($record['store_id'] == 0) {
-						$record['store_id'] = $default_id;
-					}*/
 					if (array_key_exists($record['string_id'], $storeIds)) {
 					$storeIds[$record['string_id']] .= ',' . $record['store_id'];
 					} else {

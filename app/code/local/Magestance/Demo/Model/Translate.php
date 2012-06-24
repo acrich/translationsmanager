@@ -18,6 +18,61 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     	return Mage::getResourceSingleton('demo/string');
     }
     
+    /**
+     * Translate
+     *
+     * @param   array $args
+     * @return  string
+     */
+    public function translate($args)
+    {
+    	if (array_key_exists('magestanceScan', $_GET))
+		{
+	    	$text = array_shift($args);
+	    	if (!(is_string($text) && ''==$text)
+	    			&& !is_null($text)
+	    			&& !(is_bool($text) && false===$text)
+	    			&& !(is_object($text) && ''==$text->getText())) {
+	    		
+		    	if ($text instanceof Mage_Core_Model_Translate_Expr) {
+		    		$module = $text->getModule();
+		    		$text = $text->getText();
+		    		
+		    		$string_id = Mage::getModel('demo/string')->createItem(array(
+										'string' => $text, 
+										'module' => $module
+									));
+		    		$queue = Mage::helper('demo/queue')->getFirst('sync');
+		    		$path = $queue['data']['path'];
+					Mage::getModel('demo/path')->createItem(array(
+								'path' => $path,
+								'string_id' => $string_id
+							));
+		    	} else {
+		    		if (!empty($_REQUEST['theme'])) {
+		    			$module = 'frontend/default/'.$_REQUEST['theme'];
+		    		} else {
+		    			$module = 'frontend/default/default';
+		    		}
+		    		$string_id = Mage::getModel('demo/string')->createItem(array(
+		    				'string' => $text,
+		    				'module' => $module
+		    		));
+		    		$queue = Mage::helper('demo/queue')->getFirst('sync');
+		    		$path = $queue['data']['path'];
+		    		Mage::getModel('demo/path')->createItem(array(
+								'path' => $path,
+								'string_id' => $string_id
+							));
+		    	}
+	    	}
+	    
+	    	array_unshift($args, $text);
+		}
+    	    
+    	return parent::translate($args);
+    }
+    
     public function migrateCoreDb()
     {
     	$model = Mage::getModel('core/translate');

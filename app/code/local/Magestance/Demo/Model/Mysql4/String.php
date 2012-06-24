@@ -1,6 +1,7 @@
 <?php
 class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstract
 {
+	const SCOPE_SEPARATOR = '::';
     
 	public function _construct()
     {    
@@ -27,15 +28,22 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		
 		$collection = Mage::getModel('demo/translation')
 				->getCollection()
-				->addFieldToFilter('store_id',array('in'=>array(0,$storeId)))
-				->addFieldToFilter('locale',array('eq'=>$locale))
-				->setOrder('store_id');
+				->addFieldToFilter('store_id',array('in'=>array(0,$storeId)));
+		if (!is_null($locale)) {
+			$collection->addFieldToFilter('locale',array('eq'=>$locale));
+		}
+		$collection->setOrder('store_id')->load();
 		
 		$results = array();
 		foreach ($collection as $item)
 		{
-			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
-			$results[unserialize($string)] = unserialize($item['translation']);
+			$string_item = Mage::getModel('demo/string')->load($item['string_id']);
+			$string = unserialize($string_item->getString());
+			$module = $string_item->getModule();
+			if (!is_null($module) && module != '') {
+				$string = $module . self::SCOPE_SEPARATOR . $string;
+			}
+			$results[$string] = unserialize($item['translation']);
 		}
 		
 		return $results;

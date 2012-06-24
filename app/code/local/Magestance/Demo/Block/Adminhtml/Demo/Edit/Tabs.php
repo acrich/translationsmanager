@@ -13,10 +13,16 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tabs extends Mage_Adminhtml_Bloc
 
   protected function _beforeToHtml()
   {
-      $this->addTab('form_section', array(
+      $this->addTab('item_form', array(
           'label'     => Mage::helper('demo')->__('Item Information'),
           'title'     => Mage::helper('demo')->__('Item Information'),
           'content'   => $this->getLayout()->createBlock('demo/adminhtml_demo_edit_tab_form')->toHtml(),
+      ));
+      
+      $this->addTab('item_paths', array(
+      		'label'     => Mage::helper('demo')->__('Associated Paths'),
+      		'title'     => Mage::helper('demo')->__('Associated Paths'),
+      		'content'   => $this->getLayout()->createBlock('demo/adminhtml_demo_edit_tab_paths')->toHtml(),
       ));
      
       return parent::_beforeToHtml();

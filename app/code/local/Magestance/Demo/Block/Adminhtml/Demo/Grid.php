@@ -24,7 +24,48 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
       $collection->getSelect()->joinLeft('demo_translation', 'main_table.string_id = demo_translation.string_id AND demo_translation.store_id = ' . $store->getId(),array('translation'));
 
       $this->setCollection($collection);
-      return parent::_prepareCollection();
+      
+      if ($this->getCollection()) {
+      
+      	$this->_preparePage();
+      
+      	$columnId = $this->getParam($this->getVarNameSort(), $this->_defaultSort);
+      	$dir      = $this->getParam($this->getVarNameDir(), $this->_defaultDir);
+      	$filter   = $this->getParam($this->getVarNameFilter(), null);
+      
+      	if (is_null($filter)) {
+      		$filter = $this->_defaultFilter;
+      	}
+      
+      	if (is_string($filter)) {
+      		$data = $this->helper('adminhtml')->prepareFilterString($filter);
+      		if (array_key_exists('path', $data)) {
+      			$string_ids = Mage::getModel('demo/path')->getStringIdsByPath($data['path']);
+      			$this->getCollection()->addFieldToFilter('main_table.string_id' , array('in'=>$string_ids));
+      			$this->getChild('path_filter')->setInputValue($data['path']);
+      		}
+      		$this->_setFilterValues($data);
+      	}
+      	else if ($filter && is_array($filter)) {
+      		$this->_setFilterValues($filter);
+      	}
+      	else if(0 !== sizeof($this->_defaultFilter)) {
+      		$this->_setFilterValues($this->_defaultFilter);
+      	}
+      
+      	if (isset($this->_columns[$columnId]) && $this->_columns[$columnId]->getIndex()) {
+      		$dir = (strtolower($dir)=='desc') ? 'desc' : 'asc';
+      		$this->_columns[$columnId]->setDir($dir);
+      		$this->_setCollectionOrder($this->_columns[$columnId]);
+      	}
+      
+      	if (!$this->_isExport) {
+      		$this->getCollection()->load();
+      		$this->_afterLoadCollection();
+      	}
+      }
+      
+      return $this;
   }
 
   protected function _prepareColumns()
@@ -167,6 +208,33 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
       			'store'=>$this->getRequest()->getParam('store'), 
       			'id' => $row->getId()
       		));
+  }
+  
+  public function getPathFilterHtml()
+  {
+  	return $this->getChildHtml('path_filter');
+  }
+  
+  public function getMainButtonsHtml()
+  {
+  	$html = $this->getPathFilterHtml();
+  	
+  	$html .= parent::getMainButtonsHtml();
+  	
+  	return $html;
+  }
+  
+  protected function _prepareLayout()
+  {
+  	$this->setChild('path_filter',
+  			$this->getLayout()->createBlock('demo/adminhtml_widget_button')
+  			->setData(array(
+  					'label'     => Mage::helper('demo')->__('Filter By Path'),
+  					'onclick'   => $this->getJsObjectName().'.doFilter()',
+  					'class'   => 'task'
+  			))
+  	);
+  	return parent::_prepareLayout();
   }
 
 }

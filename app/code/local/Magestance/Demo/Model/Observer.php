@@ -44,9 +44,17 @@ class Magestance_Demo_Model_Observer
 					if (count($match))
 					{
 						$string = preg_replace("/\-\>\_\_\('(.*)'(\)|,)/U", "$1", $match[0]);
-						$string_id = Mage::getModel('demo/string')->createItem($string, $module_name);
+						$string_id = Mage::getModel('demo/string')->createItem(array(
+									'string' => $string, 
+									'module' => $module_name
+								));
 
-						Mage::getModel('demo/path')->createItem($path, $template, $match[1], $string_id);
+						Mage::getModel('demo/path')->createItem(array(
+								'path' => $path, 
+								'file' => $template, 
+								'offset' => $match[1], 
+								'string_id' => $string_id
+								));
 					}
 				}
 			}
