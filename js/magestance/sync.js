@@ -2,7 +2,7 @@ var Sync = new Class.create();
 Sync.prototype = {
 		
 		initialize : function(){
-			Sync.prototype.checkUrl = '//www.localhost.com/magento/index.php/admin/demo/sync';
+			Sync.prototype.checkUrl = '//www.localhost.com/magento/index.php/admin/translator/sync';
 			Sync.prototype.run();
 		},
 		
