@@ -86,7 +86,7 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 			$string_item = Mage::getModel('demo/string')->load($item['string_id']);
 			$string = unserialize($string_item->getString());
 			if (!is_null($string_item->getModule())) {
-				$string = $string_item->getModule() . '::' . $string;
+				$string = $string_item->getModule() . self::SCOPE_SEPARATOR . $string;
 			}
 			$results[$string] = unserialize($item['translation']);
 		}

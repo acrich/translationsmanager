@@ -73,12 +73,6 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 	
 	public function getIdByString($string)
 	{
-		/*$item = array('string' => $string);
-		if (preg_match("/::/", $item['string'])) {
-			$item['module'] = preg_replace("/(.*)::(.*)/", "/$1/", $item['string']);
-			$item['string'] = preg_replace("/(.*)::(.*)/", "/$2/", $item['string']);
-		}*/
-
 		$item = array('string' => $string);
 		if (strpos($item['string'], '::') !== false) {
 			list($item['module'], $item['string']) = explode('::', $item['string']);

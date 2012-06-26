@@ -2,6 +2,9 @@
 
 class Magestance_Demo_Helper_Sync extends Mage_Core_Helper_Abstract
 {
+	const PATH_SCAN_ACTION = 'add_path';
+	const CSV_SCAN_ACTION = 'csv_pairs_scan';
+	const CSV_QUEUE_NAME = 'csv_files_pairs';
 	
 	public function init($action_name)
 	{
@@ -20,8 +23,8 @@ class Magestance_Demo_Helper_Sync extends Mage_Core_Helper_Abstract
 		$output['state'] = $queue['state'];
 
 		switch ($queue['action']) {
-			case 'csv_pairs_scan':
-					$batch = $queue_model->getBatch('csv_files_pairs');
+			case self::CSV_SCAN_ACTION:
+					$batch = $queue_model->getBatch(self::CSV_QUEUE_NAME);
 
 					if (count($batch)) {
 						Mage::getModel('demo/translate')->addMultipleEntries($batch);
@@ -33,11 +36,12 @@ class Magestance_Demo_Helper_Sync extends Mage_Core_Helper_Abstract
 						$output['state'] = true;
 						break;
 					} else {
+						//@todo remove close().
 						$this->close();
 						$output['state'] = false;
 						break;
 					}
-				case 'add_path':
+				case self::PATH_SCAN_ACTION:
 					$output['data'] = $queue['data']['message'];
 					if ($queue['data']['go_to_url']) {
 						$output['url'] = $queue['data']['path'];

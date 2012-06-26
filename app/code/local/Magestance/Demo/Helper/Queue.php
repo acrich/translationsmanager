@@ -33,9 +33,8 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 	}
 	
 	public function getBatch($queue_id) {
-		//@todo remove the hardcoded queue name.
 		$model = Mage::getModel('demo/cache')->getCollection()
-			->addFieldToFilter('name', 'csv_files_pairs')
+			->addFieldToFilter('name', $queue_id)
 			->getLastItem();
 
 		$register = unserialize($model->getRegister());
@@ -113,5 +112,11 @@ class Magestance_Demo_Helper_Queue extends Mage_Core_Helper_Abstract
 			->getLastItem()
 			->setData('register', serialize(array($replacement)))
 			->save();
+	}
+	
+	public function setRegisterData($queue_id, $data) {
+		$register = $this->pop($queue_id);
+		$register['data'] = $data;
+		Mage::helper('demo/queue')->push($queue_id, $register);
 	}
 }

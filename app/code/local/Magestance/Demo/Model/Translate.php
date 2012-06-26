@@ -60,7 +60,9 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     public function translate($args)
     {
     	$text = array_shift($args);
-    	if (array_key_exists('magestanceScan', $_GET))
+    	$param = Mage::getModel('demo/observer');
+    	$param = $param::FLAG_SHOW_LAYOUT;
+    	if (array_key_exists($param, $_GET))
 		{
 	    	if (!(is_string($text) && ''==$text)
 	    			&& !is_null($text)

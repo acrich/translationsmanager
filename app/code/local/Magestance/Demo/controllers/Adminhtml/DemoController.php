@@ -1,28 +1,24 @@
 <?php
 
 class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller_Action
-{
-
-	protected function _initAction() {
-		$this->loadLayout()
-			->_setActiveMenu('demo/items')
-			->_addBreadcrumb(Mage::helper('adminhtml')->__('Items Manager'), Mage::helper('adminhtml')->__('Item Manager'));
-		
-		return $this;
-	}
- 
-	public function indexAction() {
-		$this->_initAction();
-
+{	
+	protected function _setStore() {
 		if ($this->getRequest()->getParam('switch')) {
 			$store_id = Mage::helper('demo')->setCurrentStore($this->getRequest()->getParam('store'));
 		} else {
 			$store_id = Mage::helper('demo')->getCurrentStore();
 		}
-		
-		$grid = $this->getLayout()->createBlock('demo/adminhtml_demo');
+	}
+ 
+	public function indexAction() {
+		$this->loadLayout()
+			->_setActiveMenu('demo/items')
+			->_addBreadcrumb(Mage::helper('adminhtml')->__('Items Manager'), Mage::helper('adminhtml')->__('Item Manager'));
+
+		$this->_setStore();
+
 		$this->_addContent($this->getLayout()->createBlock('demo/adminhtml_store_switcher'))
-			->_addContent($grid);
+			->_addContent($this->getLayout()->createBlock('demo/adminhtml_demo'));
 		
 		$this->renderLayout();
 	}
@@ -35,9 +31,9 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function importCsvFilesAction() {
 		$this->loadLayout();
 		
-		Mage::helper('demo/sync')->init('csv_pairs_scan');
-		
-		Mage::helper('demo/queue')->init('csv_files_pairs');
+		$sync = Mage::helper('demo/sync');
+		$sync->init($sync::CSV_SCAN_ACTION);		
+		Mage::helper('demo/queue')->init($sync::CSV_QUEUE_NAME);
 		Mage::helper('demo/importer')->pushCsvFilesToQueue();
 		
 		$messages = $this->getLayout()->createBlock('core/text');
@@ -79,22 +75,20 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 	public function addpathresponseAction() {
 		$data = $this->getRequest()->getPost();
 		
-		Mage::helper('demo/sync')->init('add_path');
-		$register = Mage::helper('demo/queue')->pop('sync');
-
-		$register['data'] = array('go_to_url' => true, 'path' => $data['path'], 'message' => '');
-		Mage::helper('demo/queue')->push('sync', $register);
+		$sync = Mage::helper('demo/sync');
+		$sync->init($sync::PATH_SCAN_ACTION);
+		
+		Mage::helper('demo/queue')->setRegisterData('sync', array(
+					'go_to_url' => true, 
+					'path' => $data['path'], 
+					'message' => ''
+				));
 
 		$this->_redirect('*/*/addpath/status/1');
 	}
 
 	public function editAction() {
-		
-		if ($this->getRequest()->getParam('switch')) {
-			$store_id = Mage::helper('demo')->setCurrentStore($this->getRequest()->getParam('store'));
-		} else {
-			$store_id = Mage::helper('demo')->getCurrentStore();
-		}
+		$this->_setStore();
 		
 		$id     = $this->getRequest()->getParam('id');
 		$model  = Mage::getModel('demo/string')->load($id);
