@@ -26,6 +26,11 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit_Tab_Form extends Mage_Adminhtml_
       		'required'  => false,
       ));
       
+      $fieldset->addField('translation_id', 'hidden', array(
+      		'name'      => 'translation_id',
+      		'required'  => false,
+      ));
+      
       $fieldset->addField('translation', 'editor', array(
       		'name'      => 'translation',
       		'label'     => Mage::helper('demo')->__('Translation'),

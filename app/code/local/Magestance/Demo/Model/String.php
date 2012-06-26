@@ -10,6 +10,9 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 	
 	public function createItem($item)
 	{
+		if (strpos($item['string'], '::') !== false) {
+			list($item['module'], $item['string']) = explode('::', $item['string']);
+		}
 		$string_id = $this->getIdByParams($item);
 		if (!$string_id) {
 			$this->setString(serialize($item['string']));
@@ -59,6 +62,8 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 		$col->getSelect()->where('string = ?', serialize($item['string']));
 		if (array_key_exists('module', $item)) {
 			$col->getSelect()->where('module = ?', $item['module']);
+		} else {
+			$col->getSelect()->where('module IS NULL');
 		}
 		$items = $col->load();
 		$id = count($items) ? $items->getFirstItem()->getStringId() : false;
@@ -68,12 +73,18 @@ class Magestance_Demo_Model_String extends Mage_Core_Model_Abstract
 	
 	public function getIdByString($string)
 	{
-		$col = $this->getCollection();
-		$col->getSelect()->where('string = ?', serialize($string));
-		$items = $col->load();
-		$id = count($items) ? $items->getFirstItem()->getStringId() : false;
+		/*$item = array('string' => $string);
+		if (preg_match("/::/", $item['string'])) {
+			$item['module'] = preg_replace("/(.*)::(.*)/", "/$1/", $item['string']);
+			$item['string'] = preg_replace("/(.*)::(.*)/", "/$2/", $item['string']);
+		}*/
+
+		$item = array('string' => $string);
+		if (strpos($item['string'], '::') !== false) {
+			list($item['module'], $item['string']) = explode('::', $item['string']);
+		}
 		
-		return $id;
+		return $this->getIdByParams($item);
 	}
 	
 	public function getItemByString($string)

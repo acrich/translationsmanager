@@ -49,10 +49,10 @@ class Magestance_Demo_Model_Translate_Inline extends Mage_Core_Model_Translate_I
         $resource = Mage::getResourceModel('demo/translate_string');
         foreach ($translate as $t) {
             if (Mage::getDesign()->getArea() == 'adminhtml') {
-                $storeId = 0;
+                $storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
             } else if (empty($t['perstore'])) {
                 $resource->deleteTranslate($t['original'], null, false);
-                $storeId = 0;
+                $storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
             } else {
                 $storeId = Mage::app()->getStore()->getId();
             }

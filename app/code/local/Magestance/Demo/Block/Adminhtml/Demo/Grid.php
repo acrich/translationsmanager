@@ -10,18 +10,12 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
       $this->setDefaultDir('ASC');
       $this->setSaveParametersInSession(true);
   }
-  
-  protected function _getStore()
-  {
-  	$storeId = (int) $this->getRequest()->getParam('store', 0);
-  	return Mage::app()->getStore($storeId);
-  }
 
   protected function _prepareCollection()
   {
-	  $store = $this->_getStore();
+	  $store_id = Mage::helper('demo')->getCurrentStore();
       $collection = Mage::getModel('demo/string')->getCollection();
-      $collection->getSelect()->joinLeft('demo_translation', 'main_table.string_id = demo_translation.string_id AND demo_translation.store_id = ' . $store->getId(),array('translation'));
+      $collection->getSelect()->joinLeft('demo_translation', 'main_table.string_id = demo_translation.string_id AND demo_translation.store_id = '.$store_id, array('translation', 'translation_id'));
 
       $this->setCollection($collection);
       
@@ -184,7 +178,6 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
         ));
 
         $statuses = Mage::getSingleton('demo/status')->getOptionArray();
-
         array_unshift($statuses, array('label'=>'', 'value'=>''));
         $this->getMassactionBlock()->addItem('status', array(
              'label'=> Mage::helper('demo')->__('Change status'),
@@ -199,15 +192,19 @@ class Magestance_Demo_Block_Adminhtml_Demo_Grid extends Mage_Adminhtml_Block_Wid
                      )
              )
         ));
+        
+        $this->getMassactionBlock()->addItem('delete_trans', array(
+        		'label'=> Mage::helper('demo')->__('Delete Translations'),
+        		'url'  => $this->getUrl('*/*/massDeleteTrans'),
+        		'confirm'  => Mage::helper('demo')->__('This will delete the selected translations for the currently selected store view. Are you sure?')
+        ));
+        
         return $this;
     }
 
   public function getRowUrl($row)
   {
-      return $this->getUrl('*/*/edit', array(
-      			'store'=>$this->getRequest()->getParam('store'), 
-      			'id' => $row->getId()
-      		));
+      return $this->getUrl('*/*/edit', array('id' => $row->getId()));
   }
   
   public function getPathFilterHtml()

@@ -14,6 +14,13 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit extends Mage_Adminhtml_Block_Wid
         $this->_updateButton('save', 'onclick', 'processTable()');
         $this->_updateButton('delete', 'label', Mage::helper('demo')->__('Delete Item'));
 		
+        $this->_addButton('delete_trans', array(
+                'label'     => Mage::helper('adminhtml')->__('Delete Translation'),
+                'class'     => 'delete',
+                'onclick'   => 'deleteConfirm(\''. Mage::helper('adminhtml')->__('Are you sure you want to do this?')
+                    .'\', \'' . $this->getDeleteTransUrl() . '\')',
+            ));
+        
         $this->_addButton('saveandcontinue', array(
             'label'     => Mage::helper('adminhtml')->__('Save And Continue Edit'),
             'onclick'   => 'saveAndContinueEdit()',
@@ -33,6 +40,19 @@ class Magestance_Demo_Block_Adminhtml_Demo_Edit extends Mage_Adminhtml_Block_Wid
                 editForm.submit($('edit_form').action+'back/edit/');
             }
         ";
+    }
+    
+    
+    public function getDeleteTransUrl()
+    {
+    	if (Mage::registry('demo_data') && Mage::registry('demo_data')->getTranslationId()) {
+    		return $this->getUrl('*/*/deleteTranslation', array(
+    					'translation_id' => Mage::registry('demo_data')->getTranslationId(),
+    					$this->_objectId => $this->getRequest()->getParam($this->_objectId)
+    				));
+    	} else {
+    		return $this->getUrl('*/*/deleteTranslation', array('translation_id' => 0));
+    	}
     }
 
     public function getHeaderText()

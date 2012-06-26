@@ -12,8 +12,9 @@ class Magestance_Demo_Model_Translation extends Mage_Core_Model_Abstract
 	public function createItem($item)
 	{
 		if (array_key_exists('string_id', $item)) {
-			if (!array_key_exists('store_id', $item)) {
-				if (array_key_exists('locale', $item)) {
+			if (!array_key_exists('store_id', $item) || $item['store_id'] == Mage_Core_Model_App::ADMIN_STORE_ID) {
+				$default_locale = Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID)->getConfig('general/locale/code');
+				if (array_key_exists('locale', $item) && !($item['locale'] == $default_locale)) {
 					$stores = Mage::app()->getStores();
 					$found = false;
 					foreach ($stores as $store) {
@@ -42,7 +43,7 @@ class Magestance_Demo_Model_Translation extends Mage_Core_Model_Abstract
 	
 	protected function _createDefaultItem($item)
 	{
-		$item['store_id'] = 0;
+		$item['store_id'] = Mage_Core_Model_App::ADMIN_STORE_ID;
 		$item['locale'] = Mage::app()->getStore($item['store_id'])->getConfig('general/locale/code');
 		$this->_createItem($item);
 	}
@@ -76,8 +77,11 @@ class Magestance_Demo_Model_Translation extends Mage_Core_Model_Abstract
 		}
 	}
 	
-	public function getIdByParams($string_id, $store_id = 0)
+	public function getIdByParams($string_id, $store_id = null)
 	{
+		if (is_null($store_id)) {
+			$store_id = Mage_Core_Model_App::ADMIN_STORE_ID;
+		}
 		$items = $this->getCollection()
 			->addFieldToFilter('string_id', $string_id)
 			->addFieldToFilter('store_id', $store_id)
@@ -112,5 +116,17 @@ class Magestance_Demo_Model_Translation extends Mage_Core_Model_Abstract
 			$string_ids[] = $item->getStringId();
 		}
 		return $string_ids;
+	}
+	
+	public function updateItem($item)
+	{
+		if (array_key_exists('translation_id', $item)) {
+			$this->load($item['translation_id']);
+			if (array_key_exists('translation', $item)) {
+				if ($this->getTranslation() != $item['translation']) {
+					$this->setTranslation($item['translation'])->save();
+				}
+			}
+		}
 	}
 }

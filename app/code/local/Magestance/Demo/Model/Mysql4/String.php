@@ -28,7 +28,7 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		
 		$collection = Mage::getModel('demo/translation')
 				->getCollection()
-				->addFieldToFilter('store_id',array('in'=>array(0,$storeId)));
+				->addFieldToFilter('store_id',array('in'=>array(Mage_Core_Model_App::ADMIN_STORE_ID,$storeId)));
 		if (!is_null($locale)) {
 			$collection->addFieldToFilter('locale',array('eq'=>$locale));
 		}
@@ -69,17 +69,26 @@ class Magestance_Demo_Model_Mysql4_String extends Mage_Core_Model_Mysql4_Abstrac
 		if (empty($strings)) {
 			return array();
 		}
-		//@todo get all the string_ids through the strings array and use them in the query.
+
+		$string_ids = array();
+		foreach ($strings as $string) {
+			$string_ids[] = Mage::getModel('demo/string')->getIdByString($string);
+		}
+		
 		$collection = Mage::getModel('demo/translation')
 				->getCollection()
 				->addFieldToFilter('store_id',array('eq'=>$storeId))
-				->addFieldToFilter('string_id',array('in'=>array($strings)));
+				->addFieldToFilter('string_id',array('in'=>array($string_ids)));
 
 		$results = array();
 		foreach ($collection as $item)
 		{
-			$string = Mage::getModel('demo/string')->load($item['string_id'])->getString();
-			$results[unserialize($string)] = unserialize($item['translation']);
+			$string_item = Mage::getModel('demo/string')->load($item['string_id']);
+			$string = unserialize($string_item->getString());
+			if (!is_null($string_item->getModule())) {
+				$string = $string_item->getModule() . '::' . $string;
+			}
+			$results[$string] = unserialize($item['translation']);
 		}
 		
 		return $results;

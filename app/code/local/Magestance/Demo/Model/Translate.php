@@ -177,17 +177,17 @@ class Magestance_Demo_Model_Translate extends Mage_Core_Model_Translate
     	Mage::getModel('demo/string')->load($string_id)->delete();
     }
     
-    public function getEntryByString($string)
+    public function getEntriesByString($string)
     {
-    	$string_item = getItemByString($string);
+    	$string_id = getIdByString($string);
     	$translation_model = Mage::getModel('demo/translation');
-    	$translation_item = $translation_model->load($translation_model->getIdByStringId($string_item['string_id']));
-    	
-    	return array(
-    				'string' => $string_item['module'] . self::SCOPE_SEPARATOR . $string_item['string'],
-    				'translate' => $translation_item['translation'],
-    				'store_id' => $translation_item['store_id'],
-    				'locale' => $translation_item['locale']
-    			);
+    	$items = $translation_model->getCollection()
+    		->addFieldToFilter('string_id', $string_id)
+    		->load();
+    	$result = array();
+    	foreach ($items as $item) {
+    		$result[$item['store_id']] = $item['translation_id'];
+    	}
+    	return $result;
     }
 }

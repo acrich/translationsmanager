@@ -25,7 +25,11 @@ class Magestance_Demo_Helper_Sync extends Mage_Core_Helper_Abstract
 
 					if (count($batch)) {
 						Mage::getModel('demo/translate')->addMultipleEntries($batch);
-						$output['data'] = 'processed batch.';
+						
+						$queue['data']['completed'] += count($batch);
+						$queue_model->setFirst('sync', $queue);
+						
+						$output['data'] = 'processed '.$queue['data']['completed']. ' entries out of '.$queue['data']['total'].' total.';
 						$output['state'] = true;
 						break;
 					} else {

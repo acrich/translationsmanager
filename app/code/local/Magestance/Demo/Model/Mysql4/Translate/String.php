@@ -11,6 +11,11 @@ class Magestance_Demo_Model_Mysql4_Translate_String extends Mage_Core_Model_Mysq
         $this->_init('demo/translation', 'translation_id');
     }
     
+    protected function _getStringTable()
+    {
+    	return Mage::getModel('demo/string')->getResource()->getMainTable();
+    }
+    
     /**
      * Load
      *
@@ -21,13 +26,17 @@ class Magestance_Demo_Model_Mysql4_Translate_String extends Mage_Core_Model_Mysq
      */
     public function load(Mage_Core_Model_Abstract $object, $value, $field = null)
     {
+    	$main_table = $this->getMainTable();
+    	$str_table = $this->_getStringTable();
+    	
     	if (is_string($value)) {
-    		$select = $this->_getReadAdapter()->select()
-    		->from($this->getMainTable())
-    		->where($this->getMainTable().'.string=:tr_string');
-    		
-    		$result = Mage::getModel('demo/translation')->getEntryByString($value);
-
+    		$select = $this->_getReadAdapter()->select(array('translation', 'store_id', 'locale'))
+    		->from($main_table)
+    		->joinInner($str_table, $str_table.'.string_id='.main_table.'.string_id', array('string', "group_concat(module) SEPARATOR '::'"))
+    		->where($main_table.'.string=:tr_string');
+    		$result = $this->_getReadAdapter()->fetchRow($select, array('tr_string'=>serialize($value)));
+    		$result['translate'] = unserialize($result['translation']);
+    		unset($result['translation']);
     		$object->setData($result);
     		$this->_afterLoad($object);
     		return $result;
@@ -59,7 +68,6 @@ class Magestance_Demo_Model_Mysql4_Translate_String extends Mage_Core_Model_Mysq
      */
     public function _afterLoad(Mage_Core_Model_Abstract $object)
     {
-    	
     	$string_id = Mage::getModel('demo/string')->getIdByString($object->getString());
     	$translation_items = Mage::getModel('demo/translation')
     		->getCollection()
@@ -75,12 +83,93 @@ class Magestance_Demo_Model_Mysql4_Translate_String extends Mage_Core_Model_Mysq
     }
     
     /**
+     * Before save
+     *
+     * @param Mage_Core_Model_Abstract $object
+     * @return Magestance_Demo_Model_Mysql4_Translate_String
+     */
+    protected function _beforeSave(Mage_Core_Model_Abstract $object)
+    {
+    	$string_id = Mage::getModel('demo/string')->getIdByString($object->getString());
+    	$translation_id = Mage::getModel('demo/translation')
+    		->getCollection()
+    		->addFieldToFilter('string_id', $string_id)
+    		->addFieldToFilter('store_id', Mage_Core_Model_App::ADMIN_STORE_ID)
+    		->getFirstItem()->getTranslationId();
+
+    	$object->setId($translation_id);
+    	return parent::_beforeSave($object);
+    }
+    
+    /**
+     * Save object object data
+     *
+     * @param Mage_Core_Model_Abstract $object
+     * @return Magestance_Demo_Model_Mysql4_Translate_String
+     */
+    public function save(Mage_Core_Model_Abstract $object)
+    {
+    	if ($object->isDeleted()) {
+    		return $this->deleteTranslate($object->getString(), $object->getLocale(), $object->getStoreId());
+    	}
+    	$this->_beforeSave($object);
+		
+    	Mage::getModel('demo/translate')->addEntry(array(
+    				'string' => $object->getString(),
+    				'translation' => $object->getTranslate(),
+    				'locale' => $object->getLocale(),
+    				'store_id' => $object->getStoreId()
+    			));
+
+    	$this->_afterSave($object);
+    
+    	return $this;
+    }
+    
+    /**
+     * After save
+     *
+     * @param Mage_Core_Model_Abstract $object
+     * @return Magestance_Demo_Model_Mysql4_Translate_String
+     */
+    protected function _afterSave(Mage_Core_Model_Abstract $object)
+    {
+    	$translations = $object->getStoreTranslations();
+    	if (is_array($translations)) {
+    		$string_id = Mage::getModel('demo/string')->getIdByString($object->getString());
+    		$items = Mage::getModel('demo/translate')->getEntriesByString($object->getString());
+    		
+    		foreach ($translations as $storeId => $translate) {
+    			if (is_null($translate) || $translate=='') {
+    				if (array_key_exists($storeId, $items)) {
+    					Mage::getModel('demo/translation')->load($items[$storeId])->delete();
+    				}
+    			} else {
+    				if (array_key_exists($storeId, $items)) {
+    					Mage::getModel('demo/translation')->updateItem(array(
+    								'translation_id' => $items[$storeId],
+    								'translation' => $translate
+    							));
+    				} else {
+    					Mage::getModel('demo/translation')->createItem(array(
+    								'translation' => $translate,
+    								'store_id' => $storeId,
+    								'string_id' => $string_id
+    							));
+    				}
+    			}
+    		}
+    	}
+    	return parent::_afterSave($object);
+    }
+    
+    /**
      * Delete translates
      *
      * @param string $string
      * @param string $locale
      * @param int|null $storeId
-     * @return Mage_Core_Model_Resource_Translate_String
+     * @return Magestance_Demo_Model_Mysql4_Translate_String
      */
     public function deleteTranslate($string, $locale = null, $storeId = null)
     {
@@ -108,7 +197,7 @@ class Magestance_Demo_Model_Mysql4_Translate_String extends Mage_Core_Model_Mysq
      * @param String $translate
      * @param String $locale
      * @param int|null $storeId
-     * @return Mage_Core_Model_Resource_Translate_String
+     * @return Magestance_Demo_Model_Mysql4_Translate_String
      */
     public function saveTranslate($string, $translate, $locale = null, $storeId = null)
     {    

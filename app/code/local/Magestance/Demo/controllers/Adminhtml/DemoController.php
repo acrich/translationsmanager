@@ -13,9 +13,15 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
  
 	public function indexAction() {
 		$this->_initAction();
+
+		if ($this->getRequest()->getParam('switch')) {
+			$store_id = Mage::helper('demo')->setCurrentStore($this->getRequest()->getParam('store'));
+		} else {
+			$store_id = Mage::helper('demo')->getCurrentStore();
+		}
 		
 		$grid = $this->getLayout()->createBlock('demo/adminhtml_demo');
-		$this->_addContent($this->getLayout()->createBlock('adminhtml/store_switcher'))
+		$this->_addContent($this->getLayout()->createBlock('demo/adminhtml_store_switcher'))
 			->_addContent($grid);
 		
 		$this->renderLayout();
@@ -84,7 +90,11 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 
 	public function editAction() {
 		
-		$store_id = $this->getRequest()->getParam('store');
+		if ($this->getRequest()->getParam('switch')) {
+			$store_id = Mage::helper('demo')->setCurrentStore($this->getRequest()->getParam('store'));
+		} else {
+			$store_id = Mage::helper('demo')->getCurrentStore();
+		}
 		
 		$id     = $this->getRequest()->getParam('id');
 		$model  = Mage::getModel('demo/string')->load($id);
@@ -120,7 +130,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 			$this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
 			$this->_addContent($this->getLayout()->createBlock('demo/adminhtml_demo_edit'))
-				->_addLeft($this->getLayout()->createBlock('adminhtml/store_switcher'))
+				->_addLeft($this->getLayout()->createBlock('demo/adminhtml_store_switcher'))
 				->_addLeft($this->getLayout()->createBlock('demo/adminhtml_demo_edit_tabs'));
 
 			$this->renderLayout();
@@ -152,12 +162,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 					$data['string_id'] = $string_id;
 				}
 				
-				$store_id = $this->getRequest()->getParam('store');
-				if (!$store_id) {
-					$store_id = 0;
-				}
-				
-				$data['store_id'] = $store_id;
+				$data['store_id'] = Mage::helper('demo')->getCurrentStore();
 				
 				$model = Mage::getModel('demo/translate')->addEntryWithId($data);
 
@@ -165,7 +170,7 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 				Mage::getSingleton('adminhtml/session')->setFormData(false);
 
 				if ($this->getRequest()->getParam('back')) {
-					$this->_redirect('*/*/edit', array('id' => $string_id, 'store' => $store_id));
+					$this->_redirect('*/*/edit', array('id' => $string_id));
 					return;
 				}
 				$this->_redirect('*/*/');
@@ -187,6 +192,21 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
 				$model = Mage::getModel('demo/translate')
 					->deleteEntry($this->getRequest()->getParam('id'));
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('adminhtml')->__('Item was successfully deleted'));
+				$this->_redirect('*/*/');
+			} catch (Exception $e) {
+				Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+				$this->_redirect('*/*/edit', array('id' => $this->getRequest()->getParam('id')));
+			}
+		}
+		$this->_redirect('*/*/');
+	}
+	
+	public function deleteTranslationAction() {
+		if( $this->getRequest()->getParam('translation_id') > 0 ) {
+			try {
+				Mage::getModel('demo/translation')
+				->load($this->getRequest()->getParam('translation_id'))->delete();
+				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('adminhtml')->__('Translation was successfully deleted'));
 				$this->_redirect('*/*/');
 			} catch (Exception $e) {
 				Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
@@ -239,6 +259,29 @@ class Magestance_Demo_Adminhtml_DemoController extends Mage_Adminhtml_Controller
             }
         }
         $this->_redirect('*/*/index');
+    }
+    
+    public function massDeleteTransAction() {
+    	$string_ids = $this->getRequest()->getParam('demo');
+    	$store_id = Mage::helper('demo')->getCurrentStore();
+    	if(!is_array($string_ids)) {
+    		Mage::getSingleton('adminhtml/session')->addError(Mage::helper('adminhtml')->__('Please select item(s)'));
+    	} else {
+    		try {
+    			foreach ($string_ids as $string_id) {
+    				$id = Mage::getModel('demo/translation')->getIdByParams($string_id, $store_id);
+    				Mage::getModel('demo/translation')->load($id)->delete();
+    			}
+    			Mage::getSingleton('adminhtml/session')->addSuccess(
+    					Mage::helper('adminhtml')->__(
+    							'Total of %d record(s) were successfully deleted', count($string_ids)
+    					)
+    			);
+    		} catch (Exception $e) {
+    			Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+    		}
+    	}
+    	$this->_redirect('*/*/index');
     }
   
     public function exportCsvAction()
