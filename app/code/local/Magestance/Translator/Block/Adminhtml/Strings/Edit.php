@@ -12,7 +12,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit extends Mage_Adminhtml_
         $this->_mode = 'edit';
         
         $this->_updateButton('save', 'label', Mage::helper('translator')->__('Save Item'));
-        $this->_updateButton('save', 'onclick', 'processTable()');
+        $this->_updateButton('save', 'onclick', 'str_form.processTable()');
         $this->_updateButton('delete', 'label', Mage::helper('translator')->__('Delete Item'));
 		
         $this->_addButton('delete_trans', array(

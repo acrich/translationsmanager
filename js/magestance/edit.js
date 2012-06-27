@@ -1,0 +1,53 @@
+var StrForm = new Class.create();
+StrForm.prototype = {
+		
+		initialize : function() {
+			document.observe("dom:loaded", function() {
+				$$("#parameters input.hardcoded").each(function(e) {
+					e.observe("click", function(event) {
+						var element = event.element();
+						var checked = element.getValue();
+						var tds = element.ancestors()[1];
+						var param = tds.select("[type=\'text\']");
+						if (checked) {
+							param.each(function(v) {v.disabled = true;});
+						} else {
+							param.each(function(v) {v.disabled = false;});
+						}
+					});
+				});
+				
+				if ($("string_id").getValue()) {
+					$("string").observe("focus", function(event) {
+						var element = event.element();
+						element.addClassName('validation-failed');
+
+						element.ancestors()[1].insert({after : "<tr id='string_warning'>" +
+												"<td></td>" +
+												"<td class='validation-advice'>Note that changing the string\'s value will remove " +
+													"that string\'s path records, as it is technically no longer the same element " +
+													"and won\'t apply in the same locations unless manually updated there too." +
+												"</td>" +
+											"</tr>"
+							});
+					});
+				}
+				$("string").observe("blur", function(event) {
+					event.element().removeClassName('validation-failed');
+					$("string_warning").remove();
+				});
+			});
+		},
+		
+		processTable : function() {
+			elems = $$("table#parameters input.input-text");
+			var data = "";
+			for (var i=0;i<elems.length;i++) {
+				data += elems[i].ancestors()[1].identify() + ">>>" + elems[i].getAttribute("name") + ">>>" + elems[i].getValue() + "&&&";
+			}
+			$("param").setAttribute("value", data);
+			editForm.submit();
+		},
+};
+
+str_form = new StrForm();

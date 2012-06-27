@@ -96,4 +96,17 @@ class Magestance_Translator_Model_Path extends Mage_Core_Model_Abstract
 		}
 		return $string_ids;
 	}
+	
+	public function getPathIdsByStringId($string_id) {
+		$items = $this->getCollection()
+			->addFieldToFilter('string_id', $string_id)
+			->load();
+		
+		$path_ids = array();
+		foreach ($items as $item) {
+			$id = $item->getPathId();
+			$path_ids[$id] = $id;
+		}
+		return $path_ids;
+	}
 }

@@ -10,6 +10,11 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Form extends Mage_A
      
       $fieldset->addType('table', 'Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Field_Table');
       
+      $fieldset->addField('string_id', 'hidden', array(
+      		'name'      => 'identifier',
+      		'required'  => false,
+      ));
+      
       $fieldset->addField('string', 'editor', array(
       		'name'      => 'string',
       		'label'     => Mage::helper('translator')->__('String'),
@@ -63,7 +68,6 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Form extends Mage_A
           ),
       ));
       
-     
       if (Mage::getSingleton('adminhtml/session')->getTranslatorData())
       {
           $form->setValues(Mage::getSingleton('adminhtml/session')->getTranslatorData());
@@ -71,7 +75,6 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Form extends Mage_A
       } elseif (Mage::registry('translator_data')) {
           $form->setValues(Mage::registry('translator_data')->getData());
       }
-      $form->getElement('string')->setDisabled(1);
       return parent::_prepareForm();
   }
 }

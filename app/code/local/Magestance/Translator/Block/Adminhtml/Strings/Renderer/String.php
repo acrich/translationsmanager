@@ -4,6 +4,6 @@ class Magestance_Translator_Block_Adminhtml_Strings_Renderer_String extends Mage
 	public function render(Varien_Object $row)
 	{
 		$value =  $row->getData($this->getColumn()->getIndex());
-		return unserialize($value);	
+		return unserialize($value);
 	}
 }

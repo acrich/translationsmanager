@@ -10,23 +10,27 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	
 	public function createItem($item)
 	{
+		
 		if (strpos($item['string'], '::') !== false) {
 			list($item['module'], $item['string']) = explode('::', $item['string']);
 		}
+		
 		$string_id = $this->getIdByParams($item);
 		if (!$string_id) {
-			$this->setString(serialize($item['string']));
+
 			preg_match_all("/%(?:[0-9]+\\\$)?[\+\-]?(?:[ 0]|\'.)?-?[0-9]*(?:\.[0-9]+)?[bcdeEufFgGosxX]/", $item['string'], $results);
 			$parameters = array();
 			for ($i = 0; $i < count($results[0]); $i++) {
 				$parameters[] = array('hardcoded' => true, 'position' => $i, 'orig_position' => $i, 'value' => '');
 			}
-			$this->setParameters(serialize($parameters));
-			$this->setStatus(true);
-			if (array_key_exists('module', $item) && !is_null($item['module'])) {
-				$this->setModule($item['module']);
-			}
-			$this->save();
+			
+			$data = array();
+			$data['string'] = serialize($item['string']);
+			$data['parameters'] = serialize($parameters);
+			$data['status'] = (isset($item['status'])) ? $item['status'] : 1;
+			$data['module'] = (array_key_exists('module', $item)) ? $item['module'] : null;
+
+			$this->setData($data)->save();
 			$string_id = $this->getStringId();
 		} else {
 			$item['string_id'] = $string_id;
@@ -35,25 +39,25 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		return $string_id;
 	}
 	
-	//@todo add module and status to the update as well.
 	public function updateItem($item)
 	{
+		$data = array();
+		
 		if (array_key_exists('param', $item) && count($item['param'])) {
-			$this->load($item['string_id']);
-			$params = unserialize($this->getParameters());
-			if (!is_array($params)) {
-				$params = array();
-			}
-			foreach ($item['param'] as $key => $param) {
-				if (!array_key_exists($key, $params)) {
-					$params[$key] = array();
-				}
-				$params[$key]['hardcoded'] = $param['hardcoded'] == 'on' ? true : false;
-				$params[$key]['position'] = $param['position'];
-				$params[$key]['value'] = $param['param'];
-			}
-			$this->setParameters(serialize($params))->save();
+			$data['parameters'] = serialize($item['param']);
 		}
+		if (isset($item['status'])) {
+			$data['status'] = $item['status'];
+		}
+		if (isset($item['module'])) {
+			$data['module'] = $item['module'];
+		}
+		if (isset($item['string']) && $item['string'] != '') {
+			$data['string'] = serialize($item['string']);
+		}
+		$data['string_id'] = $item['string_id'];
+
+		$this->load($item['string_id'])->setData($data)->save();
 	}
 	
 	public function getIdByParams($item)
@@ -67,7 +71,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		}
 		$items = $col->load();
 		$id = count($items) ? $items->getFirstItem()->getStringId() : false;
-	
+
 		return $id;
 	}
 	

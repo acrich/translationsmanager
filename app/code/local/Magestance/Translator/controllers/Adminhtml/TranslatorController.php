@@ -63,6 +63,8 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 			
 			$this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
+			$this->getLayout()->getBlock('head')->addJs('magestance/edit.js');
+			
 			$this->_addContent($this->getLayout()->createBlock('translator/adminhtml_strings_edit'))
 				->_addLeft($this->getLayout()->createBlock('translator/adminhtml_store_switcher'))
 				->_addLeft($this->getLayout()->createBlock('translator/adminhtml_strings_edit_tabs'));
@@ -84,24 +86,29 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 				
 				$params = explode('&&&', $data['param'], -1);
 				$data['param'] = array();
-				
 				foreach ($params as $param) {
 					$param = explode('>>>', $param);
-					if (array_key_exists($param[0], $data['param']) && is_array($data['param'][$param[0]])) {
-						$data['param'][$param[0]][$param[1]] = $param[2];
-					} else {
-						$data['param'][$param[0]] = array($param[1] => $param[2]);
+					if (!is_array($data['param'][$param[0]])) {
+						$data['param'][$param[0]] = array();
 					}
+					$data['param'][$param[0]][$param[1]] = $param[2];
 				}
 				
 				$string_id = $this->getRequest()->getParam('id');
-				if ($string_id != 0) {
+				if (!is_null($string_id) && $string_id != 0) {
 					$data['string_id'] = $string_id;
+					$string = Mage::getModel('translator/string')->load($string_id);
+					if (unserialize($string->getString()) != $data['string']) {
+						$path_ids = Mage::getModel('translator/path')->getPathIdsByStringId($string_id);
+						foreach ($path_ids as $path_id) {
+							Mage::getModel('translator/path')->load($path_id)->delete();
+						}
+					}
 				}
 				
 				$data['store_id'] = Mage::helper('translator')->getCurrentStore();
 				
-				Mage::getModel('translator/translate')->addEntryWithId($data);
+				Mage::getModel('translator/translate')->addEntry($data);
 
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('translator')->__('Item was successfully saved'));
 				Mage::getSingleton('adminhtml/session')->setFormData(false);

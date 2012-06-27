@@ -74,17 +74,13 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 		    	if ($text instanceof Mage_Core_Model_Translate_Expr) {
 		    		$module = $text->getModule();
 		    		$text = $text->getText();
-		    	} else {
-		    		if (!empty($_REQUEST['theme'])) {
-		    			$module = 'frontend/default/'.$_REQUEST['theme'];
-		    		} else {
-		    			$module = 'frontend/default/default';
-		    		}
 		    	}
-	    		$string_id = Mage::getModel('translator/string')->createItem(array(
-	    				'string' => $text,
-	    				'module' => $module,
-	    		));
+		    	$data = array('string' => $text);
+		    	if (isset($module)) {
+		    		$data['module'] = $module;
+		    	}
+		    	
+	    		$string_id = Mage::getModel('translator/string')->createItem($data);
 	    		$queue = Mage::helper('translator/queue')->getFirst('sync');
 	    		$path = $queue['data']['path'];
 	    		Mage::getModel('translator/path')->createItem(array(
@@ -150,7 +146,11 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     
     public function addEntry($item)
     {
-    	$item['string_id'] = Mage::getModel('translator/string')->createItem($item);
+    	if (!isset($item['string_id'])) {
+    		$item['string_id'] = Mage::getModel('translator/string')->createItem($item);
+    	} else {
+    		Mage::getModel('translator/string')->updateItem($item);
+    	}
     	Mage::getModel('translator/translation')->createItem($item);
     }
     
@@ -159,23 +159,6 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     	foreach ($batch as $item) {
     		$this->addEntry($item);
     	}
-    }
-    
-    public function addEntryWithId($item)
-    {
-    	if (!array_key_exists('string_id', $item)) {
-    		$item['string_id'] = Mage::getModel('translator/string')->createItem($item);
-    	}
-    	$model = Mage::getModel('translator/string')->load($item['string_id']);
-    	if (array_key_exists('module', $item)) {
-    		$model->setModule($item['module']);
-    	}
-    	if (array_key_exists('status', $item)) {
-    		$model->setStatus($item['status']);
-    	}
-    	$model->save();
-    	Mage::getModel('translator/string')->updateItem($item);
-    	Mage::getModel('translator/translation')->createItem($item);
     }
     
     public function deleteEntry($string_id)
