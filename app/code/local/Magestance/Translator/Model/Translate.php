@@ -110,7 +110,9 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 					}
 					if ($param['value'] != '') {
 						$callback = function($matches) {
-							return Mage::getModel('core/variable')->loadByCode($matches[1])->getValue('html');
+							$var = Mage::getModel('core/variable');
+							$var->setStoreId(Mage::app()->getStore()->getId());
+							return $var->loadByCode($matches[1])->getValue('html');
 						};
 						$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
 						$args2[$param['position']] = $param['value'];

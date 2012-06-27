@@ -60,9 +60,9 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	{
 		$col = $this->getCollection();
 		$col->getSelect()->where('string = ?', serialize($item['string']));
-		if (array_key_exists('module', $item)) {
+		if (isset($item['module'])) {
 			$col->getSelect()->where('module = ?', $item['module']);
-		} else {
+		} elseif (array_key_exists('module', $item)) {
 			$col->getSelect()->where('module IS NULL');
 		}
 		$items = $col->load();
