@@ -37,9 +37,14 @@
 						<sort_order>2</sort_order>
 						<action>adminhtml/translator/migrateCoreDb</action>
 					</migrate>
+					<themes module="translator">
+						<title>Migrate Theme Files</title>
+						<sort_order>3</sort_order>
+						<action>adminhtml/translator/importThemeCsvs</action>
+					</themes>
 					<sync module="translator">
 						<title>Do a Sync</title>
-						<sort_order>3</sort_order>
+						<sort_order>4</sort_order>
 						<action>adminhtml/translator/importCsvFiles</action>
 					</sync>
 				</children>

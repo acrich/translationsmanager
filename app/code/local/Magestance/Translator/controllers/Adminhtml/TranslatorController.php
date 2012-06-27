@@ -200,7 +200,7 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
     
     public function massDeleteTransAction() {
     	$string_ids = $this->getRequest()->getParam('strings');
-    	$store_id = Mage::helper('demo')->getCurrentStore();
+    	$store_id = Mage::helper('translator')->getCurrentStore();
     	if(!is_array($string_ids)) {
     		Mage::getSingleton('adminhtml/session')->addError(Mage::helper('translator')->__('Please select item(s)'));
     	} else {
@@ -282,6 +282,24 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
     public function syncAction() {
     	$output = Mage::helper('translator/sync')->iterator();
     	$this->getResponse()->setBody(json_encode($output));
+    }
+    
+    public function importThemeCsvsAction() {
+    	$this->loadLayout();
+    	
+    	$sync = Mage::helper('translator/sync');
+    	$sync->init($sync::THEME_SCAN_ACTION);
+    	Mage::helper('translator/queue')->init($sync::THEME_QUEUE_NAME);
+    	Mage::helper('translator/importer')->pushThemeCsvsToQueue();
+    	
+    	$messages = $this->getLayout()->createBlock('core/text');
+    	$messages->setText('<div id="magestance-messages"></div>');
+    	$this->_addContent($messages);
+    	
+    	$head = $this->getLayout()->getBlock('head');
+    	$head->addJs('magestance/sync.js');
+    	
+    	$this->renderLayout();
     }
     
     public function pagescanAction() {

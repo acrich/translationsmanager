@@ -151,7 +151,7 @@ class Magestance_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mode
     								'translation' => $translate
     							));
     				} else {
-    					Mage::getModel('demo/translation')->createItem(array(
+    					Mage::getModel('translator/translation')->createItem(array(
     								'translation' => $translate,
     								'store_id' => $storeId,
     								'string_id' => $string_id
