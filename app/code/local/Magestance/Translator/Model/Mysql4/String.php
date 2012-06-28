@@ -38,12 +38,14 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 		foreach ($collection as $item)
 		{
 			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
-			$string = unserialize($string_item->getString());
-			$module = $string_item->getModule();
-			if (!is_null($module) && $module != '') {
-				$string = $module . self::SCOPE_SEPARATOR . $string;
+			if ($string_item->getStatus()) {
+				$string = unserialize($string_item->getString());
+				$module = $string_item->getModule();
+				if (!is_null($module) && $module != '') {
+					$string = $module . self::SCOPE_SEPARATOR . $string;
+				}
+				$results[$string] = unserialize($item['translation']);
 			}
-			$results[$string] = unserialize($item['translation']);
 		}
 		
 		return $results;
