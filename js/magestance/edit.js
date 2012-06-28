@@ -32,11 +32,34 @@ StrForm.prototype = {
 							});
 					});
 				}
+				
 				$("string").observe("blur", function(event) {
 					event.element().removeClassName('validation-failed');
 					$("string_warning").remove();
 				});
 			});
+		},
+		
+		removeParam : function(element) {
+			if (confirm('This action is irreversible. Are you sure?')) {
+				element.ancestors()[1].remove();
+			}
+		},
+		
+		addParam : function(element) {
+			var tr = element.ancestors()[1];
+			var key = tr.siblings().length - 1;
+			tr.insert({before : "<tr id='" + key + "'>" +
+					"<td style='border: 1px solid #AAA; width:80px;'>" +
+					"<input style='width:100%;' class='input-text hardcoded' name='hardcoded'  type='checkbox' />" +
+					"</td><td style='border: 1px solid #AAA; padding: 2px; width: 80px;'>" +
+					"<input class='input-text position' name='position' style='width:70%; padding: 3px;' type='text' value='" + key + "' /></td>" +
+					"<td style='border: 1px solid #AAA; padding: 2px; width: 400px;'>" +
+					"<input class='input-text param' name='param' style='width:96%; padding: 3px;' type='text' value='' /></td>" +
+					"<td style='border: 1px solid #AAA; text-align: right; padding: 2px;'>" +
+					"<input type='button' value='Remove Parameter' class='remove-param' onclick='str_form.removeParam(this)' /><td>" +
+					"</tr>"});
+			
 		},
 		
 		processTable : function() {

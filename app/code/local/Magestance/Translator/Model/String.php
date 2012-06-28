@@ -43,7 +43,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	{
 		$data = array();
 		
-		if (array_key_exists('param', $item) && count($item['param'])) {
+		if (isset($item['param'])) {
 			$data['parameters'] = serialize($item['param']);
 		}
 		if (isset($item['status'])) {
