@@ -2,12 +2,17 @@
 
 class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 {
-    public function _construct()
-    {
-        parent::_construct();
-        $this->_init('translator/string');
-    }
-    
+
+	/**
+	 * Retrieve DB resource model
+	 *
+	 * @return unknown
+	 */
+	public function getResource()
+	{
+		return Mage::getResourceSingleton('translator/string');
+	}
+
     /**
      * Initialization translation data
      *
@@ -42,13 +47,18 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     }
     
     /**
-     * Retrieve DB resource model
+     * Loading current store translation from DB
      *
-     * @return unknown
+     * @return Magestance_Translator_Model_Translate
      */
-    public function getResource()
+    protected function _loadDbTranslation($forceReload = false)
     {
-    	return Mage::getResourceSingleton('translator/string');
+    	$arr = $this->getResource()->getTranslationArrayByModule($this->getLocale());
+    	foreach ($arr as $scope => $pairs) {
+    		$this->_addData($pairs, $scope, $forceReload);
+    	}
+    	
+    	return $this;
     }
     
     /**

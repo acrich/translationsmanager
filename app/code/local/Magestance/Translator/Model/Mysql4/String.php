@@ -105,4 +105,43 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 	{
 		return $this->getChecksum($this->getEntityTable());
 	}
+	
+	public function getTranslationArrayByModule($locale = null)
+	{
+		$storeId = Mage::app()->getStore()->getId();
+		
+		$collection = Mage::getModel('translator/translation')
+			->getCollection()
+			->addFieldToFilter('store_id',array('in'=>array(Mage_Core_Model_App::ADMIN_STORE_ID,$storeId)));
+		
+		if (!is_null($locale)) {
+			$collection->addFieldToFilter('locale',$locale);
+		}
+		
+		$collection->setOrder('store_id')
+			->load();
+	
+		$results = array();
+		foreach ($collection as $item)
+		{
+			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
+			if ($string_item->getStatus()) {
+				$string = unserialize($string_item->getString());
+				$module = $string_item->getModule();
+				if (!is_null($module) && $module != '') {
+					if (!is_array($results[$module])) {
+						$results[$module] = array();
+					}
+					$results[$module][$string] = unserialize($item['translation']);
+				} else {
+					if (!is_array($results[$storeId])) {
+						$results[$storeId] = array();
+					}
+					$results[$storeId][$string] = unserialize($item['translation']);
+				}
+			}
+		}
+	
+		return $results;
+	}
 }
