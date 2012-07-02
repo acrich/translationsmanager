@@ -36,9 +36,6 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 		$id     = $this->getRequest()->getParam('id');
 		$model  = Mage::getModel('translator/string')->load($id);
 		
-		$string = $model->getString();
-		$model->setString(unserialize($string));
-		
 		if ($model->getId() || $id == 0) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
 			if (!empty($data)) {
@@ -47,7 +44,7 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 			
 			$translation_id = Mage::getModel('translator/translation')->getIdByParams($model->getId(), $store_id);
 			if ($translation_id) {
-				$translation = unserialize(Mage::getModel('translator/translation')->load($translation_id)->getTranslation());	
+				$translation = Mage::getModel('translator/translation')->load($translation_id)->getTranslation();	
 			} else {
 				$translation_id = 0;
 				$translation = '';
@@ -102,7 +99,7 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 				if (!is_null($string_id) && $string_id != 0) {
 					$data['string_id'] = $string_id;
 					$string = Mage::getModel('translator/string')->load($string_id);
-					if (unserialize($string->getString()) != $data['string']) {
+					if ($string->getString() != $data['string']) {
 						$path_ids = Mage::getModel('translator/path')->getPathIdsByStringId($string_id);
 						foreach ($path_ids as $path_id) {
 							Mage::getModel('translator/path')->load($path_id)->delete();

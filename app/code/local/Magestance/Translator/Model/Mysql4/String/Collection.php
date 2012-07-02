@@ -50,12 +50,12 @@ class Magestance_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mod
 	 */
 	protected function _afterLoad()
 	{
-		$items = $this->getColumnValues('string_id');
 		$connection = $this->getConnection();
+		$items = $this->getColumnValues('string_id');
 		if (count($items)) {
 			$select = $connection->select()
-			->from(array('cps'=>$this->getTable('translator/translation')), array('string_id', 'store_id'))
-			->where('cps.string_id IN (?)', $items);
+				->from(array('tr'=>$this->getTable('translator/translation')), array('string_id', 'store_id'))
+				->where('tr.string_id IN (?)', $items);
 			if ($results = $connection->fetchAll($select)) {
 				$storeIds = array();
 				foreach ($results as $record) {
@@ -64,7 +64,7 @@ class Magestance_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mod
 					} else {
 						$storeIds[$record['string_id']] = $record['store_id'];
 					}
-				}
+				}				
 				foreach ($storeIds as $key => $record) {
 					$storeIds[$key] = explode(',', $record);
 				}
@@ -76,7 +76,14 @@ class Magestance_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mod
 				}
 			}
 		}
-	
+		
+		foreach ($this as $item) {
+			$string = $item->getData('string');
+			$string = preg_replace( "/^\'(.*)\'$/U", "$1", $string);
+			$string = preg_replace( "/\'\'/U", "\'", $string);
+			$item->setData('string', $string);
+		}
+		
 		return parent::_afterLoad();
 	}
 }

@@ -15,7 +15,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 			list($item['module'], $item['string']) = explode('::', $item['string']);
 		}
 		
-		$string_id = $this->getIdByParams($item);
+		$string_id = $this->getResource()->getIdByParams($item);
 		if (!$string_id) {
 			$data = array();
 			if (!isset($item['parameters'])) {
@@ -27,7 +27,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 			}
 			
 			$data['parameters'] = serialize($item['parameters']);
-			$data['string'] = serialize($item['string']);
+			$data['string'] = $item['string'];
 			$data['status'] = (isset($item['status'])) ? $item['status'] : 1;
 			$data['module'] = (array_key_exists('module', $item)) ? $item['module'] : null;
 
@@ -53,26 +53,11 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 			$data['module'] = $item['module'];
 		}
 		if (isset($item['string']) && $item['string'] != '') {
-			$data['string'] = serialize($item['string']);
+			$data['string'] = $item['string'];
 		}
 		$data['string_id'] = $item['string_id'];
 
 		$this->load($item['string_id'])->setData($data)->save();
-	}
-	
-	public function getIdByParams($item)
-	{
-		$col = $this->getCollection();
-		$col->getSelect()->where('string = ?', serialize($item['string']));
-		if (isset($item['module'])) {
-			$col->getSelect()->where('module = ?', $item['module']);
-		} elseif (array_key_exists('module', $item)) {
-			$col->getSelect()->where('module IS NULL');
-		}
-		$items = $col->load();
-		$id = count($items) ? $items->getFirstItem()->getStringId() : false;
-
-		return $id;
 	}
 	
 	public function getIdByString($string)
@@ -82,7 +67,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 			list($item['module'], $item['string']) = explode('::', $item['string']);
 		}
 		
-		return $this->getIdByParams($item);
+		return $this->getResource()->getIdByParams($item);
 	}
 	
 	public function getItemByString($string)

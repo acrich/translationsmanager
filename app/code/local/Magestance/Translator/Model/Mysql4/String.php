@@ -16,8 +16,7 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 	 * @return array
 	 */
 	public function getTranslationArray($storeId = null, $locale = null)
-	{
-				
+	{		
 		if (!Mage::isInstalled()) {
 			return array();
 		}
@@ -33,22 +32,8 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 			$collection->addFieldToFilter('locale',array('eq'=>$locale));
 		}
 		$collection->setOrder('store_id')->load();
-		
-		$results = array();
-		foreach ($collection as $item)
-		{
-			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
-			if ($string_item->getStatus()) {
-				$string = unserialize($string_item->getString());
-				$module = $string_item->getModule();
-				if (!is_null($module) && $module != '') {
-					$string = $module . self::SCOPE_SEPARATOR . $string;
-				}
-				$results[$string] = unserialize($item['translation']);
-			}
-		}
-		
-		return $results;
+
+		return $this->_preparePairs($collection);
 	}
 	
 	/**
@@ -80,34 +65,18 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 		$collection = Mage::getModel('translator/translation')
 				->getCollection()
 				->addFieldToFilter('store_id', $storeId)
-				->addFieldToFilter('string_id',array('in'=>array($string_ids)));
+				->addFieldToFilter('string_id',array('in'=>array($string_ids)))
+				->load();
 		
-		$results = array();
-		foreach ($collection as $item)
-		{
-			$string_item = Mage::getModel('translator/string')->load($item->getStringId());
-			$string = unserialize($string_item->getString());
-			if (!is_null($string_item->getModule())) {
-				$string = $string_item->getModule() . self::SCOPE_SEPARATOR . $string;
-			}
-			$results[$string] = unserialize($item['translation']);
-		}
-		
-		return $results;
-	}
-	
-	/**
-	 * Retrieve table checksum
-	 *
-	 * @return int
-	 */
-	public function getMainChecksum()
-	{
-		return $this->getChecksum($this->getMainTable());
+		return $this->_preparePairs($collection);
 	}
 	
 	public function getTranslationArrayByModule($locale = null)
 	{
+		if (!Mage::isInstalled()) {
+			return array();
+		}
+		
 		$storeId = Mage::app()->getStore()->getId();
 		
 		$collection = Mage::getModel('translator/translation')
@@ -118,30 +87,84 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 			$collection->addFieldToFilter('locale',$locale);
 		}
 		
-		$collection->setOrder('store_id')
-			->load();
+		$collection->setOrder('store_id')->load();
 	
 		$results = array();
 		foreach ($collection as $item)
 		{
 			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
 			if ($string_item->getStatus()) {
-				$string = unserialize($string_item->getString());
 				$module = $string_item->getModule();
-				if (!is_null($module) && $module != '') {
-					if (!array_key_exists($module, $results)) {
-						$results[$module] = array();
-					}
-					$results[$module][$string] = unserialize($item['translation']);
+				if (is_null($module) || $module == '') {
+					$scope = $storeId;
 				} else {
-					if (!array_key_exists($storeId, $results)) {
-						$results[$storeId] = array();
-					}
-					$results[$storeId][$string] = unserialize($item['translation']);
+					$scope = $module;
 				}
+				if (!array_key_exists($scope, $results)) {
+					$results[$scope] = array();
+				}
+				$results[$scope][$string_item->getString()] = $item['translation'];
 			}
 		}
 	
 		return $results;
+	}
+	
+	protected function _preparePairs($collection)
+	{
+		$results = array();
+		foreach ($collection as $item)
+		{
+			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
+			if ($string_item->getStatus()) {
+				$string = $string_item->getString();
+				$module = $string_item->getModule();
+				if (!is_null($module) && $module != '') {
+					$string = $module . self::SCOPE_SEPARATOR . $string;
+				}
+				$results[$string] = $item['translation'];
+			}
+		}
+		return $results;
+	}
+	
+	public function getMainChecksum()
+	{
+		return $this->getChecksum($this->getMainTable());
+	}
+	
+	public function getIdByParams($item)
+	{
+		$adapter = $this->_getReadAdapter();
+		$string = $adapter->quote($item['string']);
+	
+		$select = $adapter->select()
+			->from($this->getMainTable(), array('string_id'))
+			->where('string = ?', $string);
+		if (isset($item['module'])) {
+			$select->where('module = ?', $item['module']);
+		} elseif (array_key_exists('module', $item)) {
+			$select->where('module IS NULL');
+		}
+		return $adapter->fetchOne($select);
+	}
+	
+	protected function _beforeSave(Mage_Core_Model_Abstract $object)
+	{
+		$string = $object->getData('string');
+		$string = $this->_getWriteAdapter()->quote($string);
+		$object->setData('string', $string);
+		
+		return $this;
+	}
+	
+	protected function _afterLoad(Mage_Core_Model_Abstract $object)
+	{
+		$string = $object->getData('string');
+		$string = preg_replace( "/^\'(.*)\'$/U", "$1", $string);
+		$string = preg_replace( "/\'\'/U", "\'", $string);
+		$object->setData('string', $string);
+		
+		return $this;
 	}
 }

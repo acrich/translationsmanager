@@ -37,10 +37,10 @@ class Magestance_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mode
     			if ($item->getStoreId() == 0) {
     				$data['key_id'] = $item->getTranslationId();
     				$data['store_id'] = '0';
-    				$data['translate'] = unserialize($item->getTranslation());
+    				$data['translate'] = $item->getTranslation();
     				$data['locale'] = $item->getLocale();
     			}
-    			$data['store_translations'][$item->getStoreId()] = unserialize($item->getTranslation());
+    			$data['store_translations'][$item->getStoreId()] = $item->getTranslation();
     		}
     		$object->setData($data);
     		return $object;

@@ -16,7 +16,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
 	  $store_id = Mage::helper('translator')->getCurrentStore();
       $collection = Mage::getModel('translator/string')->getCollection();
       $collection->getSelect()->joinLeft('translator_translation', 'main_table.string_id = translator_translation.string_id AND translator_translation.store_id = '.$store_id, array('translation', 'translation_id'));
-
+      
       $this->setCollection($collection);
       
       if ($this->getCollection()) {
@@ -60,7 +60,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
       		$this->_afterLoadCollection();
       	}
       }
-      
+
       return $this;
   }
 
@@ -79,7 +79,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
           'align'     =>'left',
           'index'     => 'string',
       	  'filter_index' => 'main_table.string',
-      	  'renderer' => 'Magestance_Translator_Block_Adminhtml_Strings_Renderer_String'
+      	  //'renderer' => 'Magestance_Translator_Block_Adminhtml_Strings_Renderer_String'
       ));
 
       $this->addColumn('translation', array(
@@ -87,7 +87,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
           'align'     =>'left',
           'index'     => 'translation',
       	  'filter_index' => 'translator_translation.translation',
-      	  'renderer' => 'Magestance_Translator_Block_Adminhtml_Strings_Renderer_Translation'
+      	  //'renderer' => 'Magestance_Translator_Block_Adminhtml_Strings_Renderer_Translation'
       ));
       
       $this->addColumn('module', array(
@@ -146,6 +146,12 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
   protected function _afterLoadCollection()
   {
   	$this->getCollection()->walk('afterLoad');
+  	foreach ($this->getCollection() as $item) {
+  		$translation = $item->getData('translation');
+  		$translation = preg_replace( "/^\'(.*)\'$/U", "$1", $translation);
+  		$translation = preg_replace( "/\'\'/U", "\'", $translation);
+  		$item->setData('translation', $translation);
+  	}
   	parent::_afterLoadCollection();
   }
   
