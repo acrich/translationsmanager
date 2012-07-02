@@ -160,7 +160,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
 
     protected function _prepareMassaction()
     {
-        $this->setMassactionIdField('id');
+        $this->setMassactionIdField('main_table.string_id');
         $this->getMassactionBlock()->setFormFieldName('strings');
 
         $this->getMassactionBlock()->addItem('delete', array(
