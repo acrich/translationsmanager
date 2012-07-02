@@ -8,8 +8,13 @@ class Magestance_Translator_Model_Path extends Mage_Core_Model_Abstract
 		$this->_init('translator/path');
 	}
 	
+	protected function _preparePathForDb($path) {
+		return preg_replace("/http(s?)\:\/\//", '//', $path);
+	}
+	
 	public function createItem($item)
 	{
+		$item['path'] = $this->_preparePathForDb($item['path']);
 		if (array_key_exists('file', $item) && array_key_exists('offset', $item)) {
 			$items = $this->getCollection()
 				->addFieldToFilter('path', $item['path'])
@@ -74,6 +79,7 @@ class Magestance_Translator_Model_Path extends Mage_Core_Model_Abstract
 	
 	public function getMatchingId($item)
 	{
+		$item['path'] = $this->_preparePathForDb($item['path']);
 		$items = $this->getCollection()
 				->addFieldToFilter('path', $item['path'])
 				->addFieldToFilter('string_id', $item['string_id'])
@@ -85,6 +91,7 @@ class Magestance_Translator_Model_Path extends Mage_Core_Model_Abstract
 	}
 	
 	public function getStringIdsByPath($path) {
+		$path = $this->_preparePathForDb($path);
 		$items = $this->getCollection()
 		->addFieldToFilter('path', array('like' => '%' . $path . '%'))
 		->load();
