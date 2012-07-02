@@ -128,6 +128,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
                 'width'     => '100',
                 'type'      => 'action',
                 'getter'    => 'getId',
+            	'index'     => 'action',
                 'actions'   => array(
                     array(
                         'caption'   => Mage::helper('translator')->__('Edit'),
