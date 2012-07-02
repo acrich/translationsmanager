@@ -157,6 +157,11 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     
     	foreach ($data as $item) {
     		$item['translation'] = $item['translate'];
+    		
+    		if (strpos($item['string'], '::') == false) {
+    			$item['module'] = 'Mage_Catalog';
+    		}
+    		
     		$this->addEntry($item);
     	}
 
