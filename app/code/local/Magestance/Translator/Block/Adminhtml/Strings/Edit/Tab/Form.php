@@ -44,9 +44,10 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Form extends Mage_A
       		'wysiwyg'   => false,
       		'required'  => false,
       ));
-      
-      $fieldset->addField('module', 'text', array(
+
+      $fieldset->addField('module', 'select', array(
       		'name'      => 'module',
+      		'values' 	=> Mage::getModel('translator/modules')->toOptionArray(),
       		'label'     => Mage::helper('translator')->__('Module'),
       		'title'     => Mage::helper('translator')->__('Module'),
       		'required'  => false,

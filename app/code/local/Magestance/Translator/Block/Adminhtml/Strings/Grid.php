@@ -98,7 +98,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
       ));
 
 		$this->addColumn('store_id', array(
-			'header'        => Mage::helper('translator')->__('Store View'),
+			'header'        => Mage::helper('translator')->__('Translated Views'),
 			'index'         => 'store_id',
 			'filter_index' => 'translator_translation.store_id',
 			'type'          => 'store',

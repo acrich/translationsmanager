@@ -32,7 +32,7 @@ class Magestance_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mod
 			
 			$string_ids = array();
 			foreach ($store as $id) {
-				$strings = Mage::getModel('translator/translation')->getTranslationedStringsByStore($store);
+				$strings = Mage::getModel('translator/translation')->getTranslatedStringsByStore($store);
 				foreach ($strings as $string) {
 					$string_ids[] = $string;
 				}

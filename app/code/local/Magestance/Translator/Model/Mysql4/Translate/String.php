@@ -26,79 +26,25 @@ class Magestance_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mode
      */
     public function load(Mage_Core_Model_Abstract $object, $value, $field = null)
     {
-    	$main_table = $this->getMainTable();
-    	$str_table = $this->_getStringTable();
-    	
     	if (is_string($value)) {
-    		$select = $this->_getReadAdapter()->select(array('translation', 'store_id', 'locale'))
-    		->from($main_table)
-    		->joinInner($str_table, $str_table.'.string_id='.main_table.'.string_id', array('string', "group_concat(module) SEPARATOR '::'"))
-    		->where($main_table.'.string=:tr_string');
-    		$result = $this->_getReadAdapter()->fetchRow($select, array('tr_string'=>serialize($value)));
-    		$result['translate'] = unserialize($result['translation']);
-    		unset($result['translation']);
-    		$object->setData($result);
-    		$this->_afterLoad($object);
-    		return $result;
-    	} else {
-    		return parent::load($object, $value, $field);
+    		$string_id = Mage::getModel('translator/string')->getIdByString($value);
+    		$items = Mage::getModel('translator/translation')->getTranslationsByStringId($string_id);
+    		$data = array(
+    				'string' => $value,
+    				'store_translations' => array()
+    				);
+    		foreach ($items as $item) {
+    			if ($item->getStoreId() == 0) {
+    				$data['key_id'] = $item->getTranslationId();
+    				$data['store_id'] = '0';
+    				$data['translate'] = unserialize($item->getTranslation());
+    				$data['locale'] = $item->getLocale();
+    			}
+    			$data['store_translations'][$item->getStoreId()] = unserialize($item->getTranslation());
+    		}
+    		$object->setData($data);
+    		return $object;
     	}
-    }
-    
-    /**
-     * Retrieve select for load
-     *
-     * @param String $field
-     * @param String $value
-     * @param Mage_Core_Model_Abstract $object
-     * @return Varien_Db_Select
-     */
-    protected function _getLoadSelect($field, $value, $object)
-    {
-    	$select = parent::_getLoadSelect($field, $value, $object);
-    	$select->where('store_id = ?', Mage_Core_Model_App::ADMIN_STORE_ID);
-    	return $select;
-    }
-    
-    /**
-     * After translation loading
-     *
-     * @param Mage_Core_Model_Abstract $object
-     * @return Mage_Core_Model_Resource_Db_Abstract
-     */
-    public function _afterLoad(Mage_Core_Model_Abstract $object)
-    {
-    	$string_id = Mage::getModel('translator/string')->getIdByString($object->getString());
-    	$translation_items = Mage::getModel('translator/translation')
-    		->getCollection()
-    		->addFieldToFilter('string_id', $string_id)
-    		->load();
-    	$translations = array();
-    	foreach ($translation_items as $item) {
-    		$translations[$item->getStoreId()] = $item->getTranslation();
-    	}
-
-    	$object->setStoreTranslations($translations);
-    	return parent::_afterLoad($object);
-    }
-    
-    /**
-     * Before save
-     *
-     * @param Mage_Core_Model_Abstract $object
-     * @return Magestance_Translator_Model_Mysql4_Translate_String
-     */
-    protected function _beforeSave(Mage_Core_Model_Abstract $object)
-    {
-    	$string_id = Mage::getModel('translator/string')->getIdByString($object->getString());
-    	$translation_id = Mage::getModel('translator/translation')
-    		->getCollection()
-    		->addFieldToFilter('string_id', $string_id)
-    		->addFieldToFilter('store_id', Mage_Core_Model_App::ADMIN_STORE_ID)
-    		->getFirstItem()->getTranslationId();
-
-    	$object->setId($translation_id);
-    	return parent::_beforeSave($object);
     }
     
     /**
@@ -113,7 +59,7 @@ class Magestance_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mode
     		return $this->deleteTranslate($object->getString(), $object->getLocale(), $object->getStoreId());
     	}
     	$this->_beforeSave($object);
-		
+
     	Mage::getModel('translator/translate')->addEntry(array(
     				'string' => $object->getString(),
     				'translation' => $object->getTranslate(),
@@ -209,21 +155,12 @@ class Magestance_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mode
     		$storeId = Mage::app()->getStore()->getId();
     	}
     	
-    	$original = $string;
-    	if (strpos($original, '::') !== false) {
-    		list($scope, $original) = explode('::', $original);
-    	}
-    	
     	$item = array(
-    				'string' => $original, 
+    				'string' => $string, 
     				'translation' => $translate, 
     				'store_id' => $storeId,
     				'locale' => $locale
     			);
-    	
-    	if (!is_null($scope)) {
-    		$item['module'] = $scope;
-    	}
 
     	Mage::getModel('translator/translate')->addEntry($item);
     

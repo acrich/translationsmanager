@@ -48,10 +48,10 @@ StrForm.prototype = {
 		
 		addParam : function(element) {
 			var tr = element.ancestors()[1];
-			var key = tr.siblings().length - 1;
+			var key = tr.siblings().length;
 			tr.insert({before : "<tr id='" + key + "'>" +
 					"<td style='border: 1px solid #AAA; width:80px;'>" +
-					"<input style='width:100%;' class='input-text hardcoded' name='hardcoded'  type='checkbox' />" +
+					"<input style='width:100%;' class='input-text hardcoded' name='hardcoded' id='hardcoded"+key+"' type='checkbox' />" +
 					"</td><td style='border: 1px solid #AAA; padding: 2px; width: 80px;'>" +
 					"<input class='input-text position' name='position' style='width:70%; padding: 3px;' type='text' value='" + key + "' /></td>" +
 					"<td style='border: 1px solid #AAA; padding: 2px; width: 400px;'>" +
@@ -59,7 +59,17 @@ StrForm.prototype = {
 					"<td style='border: 1px solid #AAA; text-align: right; padding: 2px;'>" +
 					"<input type='button' value='Remove Parameter' class='remove-param' onclick='str_form.removeParam(this)' /><td>" +
 					"</tr>"});
-			
+			$("hardcoded"+key).on("click", function(event) {
+					var element = event.element();
+					var checked = element.getValue();
+					var tds = element.ancestors()[1];
+					var param = tds.select("[type=\'text\']");
+					if (checked) {
+						param.each(function(v) {v.disabled = true;});
+					} else {
+						param.each(function(v) {v.disabled = false;});
+					}
+				});
 		},
 		
 		processTable : function() {
@@ -69,8 +79,18 @@ StrForm.prototype = {
 				data += elems[i].ancestors()[1].identify() + ">>>" + elems[i].getAttribute("name") + ">>>" + elems[i].getValue() + "&&&";
 			}
 			$("param").setAttribute("value", data);
+		},
+		
+		processAndSave : function() {
+			str_form.processTable();
 			editForm.submit();
 		},
+		
+		processAndContinue : function() {
+			str_form.processTable();
+			saveAndContinueEdit();
+		},
+		
 };
 
 str_form = new StrForm();

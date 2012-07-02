@@ -51,13 +51,12 @@ class Magestance_Translator_Model_Translation extends Mage_Core_Model_Abstract
 	protected function _createItem($item)
 	{
 		if ($translation_id = $this->getIdByParams($item['string_id'], $item['store_id'])) {
-			$this->load($translation_id);
+			
 			if (array_key_exists('translation', $item) && $item['translation'] != '') {
-				$this->setTranslation(serialize($item['translation']))
-				->save();
+				$this->load($translation_id)->setData('translation', serialize($item['translation']))->save();
 				return $translation_id;
 			} else {
-				$this->delete();
+				$this->load($translation_id)->delete();
 				return false;
 			}
 		} else {
@@ -107,7 +106,7 @@ class Magestance_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		}
 	}
 	
-	public function getTranslationedStringsByStore($store)
+	public function getTranslatedStringsByStore($store)
 	{
 		$items = $this->getCollection()
 			->addFieldToFilter('store_id', $store);
@@ -118,13 +117,20 @@ class Magestance_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		return $string_ids;
 	}
 	
+	public function getTranslationsByStringId($string_id)
+	{
+		return $this->getCollection()
+			->addFieldToFilter('string_id', $string_id)
+			->load();
+	}
+	
 	public function updateItem($item)
 	{
 		if (array_key_exists('translation_id', $item)) {
 			$this->load($item['translation_id']);
 			if (array_key_exists('translation', $item)) {
 				if ($this->getTranslation() != $item['translation']) {
-					$this->setTranslation($item['translation'])->save();
+					$this->setTranslation(serialize($item['translation']))->save();
 				}
 			}
 		}

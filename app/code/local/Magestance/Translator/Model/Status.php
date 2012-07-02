@@ -12,4 +12,12 @@ class Magestance_Translator_Model_Status extends Varien_Object
             self::STATUS_DISABLED   => Mage::helper('translator')->__('Disabled')
         );
     }
+    
+    public function toOptionArray()
+    {
+    	return array(
+    		array('value'=>self::STATUS_ENABLED, 'label'=>Mage::helper('translator')->__('Yes')),
+            array('value'=>self::STATUS_DISABLED, 'label'=>Mage::helper('translator')->__('No')),
+    	);
+    }
 }

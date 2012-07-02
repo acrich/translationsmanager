@@ -38,6 +38,16 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     
     	$this->_data = array();
     
+    	if (Mage::getStoreConfig('translator/options/module_override') == '2') {
+	    	foreach ($this->getModulesConfig() as $moduleName=>$info) {
+	    		$info = $info->asArray();
+	    		$this->_loadModuleTranslation($moduleName, $info['files'], $forceReload);
+	    	}
+    	}
+    	if (Mage::getStoreConfig('translator/options/theme_override') == '2') {
+    		$this->_loadThemeTranslation($forceReload);
+    	}
+    	
     	$this->_loadDbTranslation($forceReload);
     
     	if (!$forceReload && $this->_canUseCache()) {
@@ -127,7 +137,6 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 			}
 		}
 		array_unshift($args2, $text);
-		
     	return parent::translate($args2);
     }
     
@@ -178,7 +187,7 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     
     public function getEntriesByString($string)
     {
-    	$string_id = getIdByString($string);
+    	$string_id = Mage::getModel('translator/string')->getIdByString($string);
     	$translation_model = Mage::getModel('translator/translation');
     	$items = $translation_model->getCollection()
     		->addFieldToFilter('string_id', $string_id)

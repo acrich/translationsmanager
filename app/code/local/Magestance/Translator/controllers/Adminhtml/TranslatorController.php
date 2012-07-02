@@ -12,6 +12,7 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 	}
  
 	public function indexAction() {
+
 		$this->loadLayout()
 			->_setActiveMenu('translator/manage')
 			->_addBreadcrumb(Mage::helper('translator')->__('Translations Manager'), Mage::helper('translator')->__('translations Manager'));
@@ -85,15 +86,18 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 			try {
 				
 				$params = explode('&&&', $data['param'], -1);
-				$data['param'] = array();
+				unset($data['param']);
+				$data['parameters'] = array();
 				foreach ($params as $param) {
 					$param = explode('>>>', $param);
-					if (!is_array($data['param'][$param[0]])) {
-						$data['param'][$param[0]] = array();
+					if (!is_array($data['parameters'][$param[0]])) {
+						$data['parameters'][$param[0]] = array();
 					}
-					$data['param'][$param[0]][$param[1]] = $param[2];
+					if ($param[1] == 'hardcoded') {
+						$param[2] = ($param[2] == 'null') ? false : true;
+					}
+					$data['parameters'][$param[0]][$param[1]] = $param[2];
 				}
-				
 				$string_id = $this->getRequest()->getParam('id');
 				if (!is_null($string_id) && $string_id != 0) {
 					$data['string_id'] = $string_id;
@@ -262,27 +266,51 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
         die;
     }
     
-    
-    public function migrateCoreDbAction() {
-    	Mage::getModel('translator/translate')->migrateCoreDb();
-    	$this->_redirect('*/*/index');
-    }
-    
-    public function importCsvFilesAction() {
+    public function syncResourcesAction() {
     	$this->loadLayout();
-    
-    	$sync = Mage::helper('translator/sync');
-    	$sync->init($sync::CSV_SCAN_ACTION);
-    	Mage::helper('translator/queue')->init($sync::CSV_QUEUE_NAME);
-    	Mage::helper('translator/importer')->pushCsvFilesToQueue();
-    
+    	$this->_setActiveMenu('translator/syncResources');
+    	$this->_addBreadcrumb(Mage::helper('translator')->__('Sync Resources'), Mage::helper('translator')->__('Sync Resources'));
+    	
+    	$form = $this->getLayout()->createBlock('translator/adminhtml_sync');
+    	$this->_addContent($form);
+    	
     	$messages = $this->getLayout()->createBlock('core/text');
-    	$messages->setText('<div id="magestance-messages"></div>');
+    	
+    	$status = $this->getRequest()->getParam('status');
+    	switch ($status) {
+    		case 'importCsvFiles':
+    			
+    			$sync = Mage::helper('translator/sync');
+    			$sync->init($sync::CSV_SCAN_ACTION);
+    			Mage::helper('translator/queue')->init($sync::CSV_QUEUE_NAME);
+    			Mage::helper('translator/importer')->pushCsvFilesToQueue();
+    			
+    			$messages->setText('<div id="magestance-messages"></div>');
+    			
+    			$head = $this->getLayout()->getBlock('head');
+    			$head->addJs('magestance/sync.js');
+    			break;
+    		case 'importThemeCsvs':
+    			
+    			$sync = Mage::helper('translator/sync');
+    			$sync->init($sync::THEME_SCAN_ACTION);
+    			Mage::helper('translator/queue')->init($sync::THEME_QUEUE_NAME);
+    			Mage::helper('translator/importer')->pushThemeCsvsToQueue();
+    			 
+    			$messages->setText('<div id="magestance-messages"></div>');
+    			 
+    			$head = $this->getLayout()->getBlock('head');
+    			$head->addJs('magestance/sync.js');
+    			break;
+    		
+    		case 'migrateCoreDb':
+    			Mage::getModel('translator/translate')->migrateCoreDb();
+
+    			$messages->setText('<div id="magestance-messages">Migration Complete. Please check the translations manager page for changes.</div>');
+    			break;
+    	}
+    	
     	$this->_addContent($messages);
-    
-    	$head = $this->getLayout()->getBlock('head');
-    	$head->addJs('magestance/sync.js');
-    
     	$this->renderLayout();
     }
     
@@ -290,25 +318,7 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
     	$output = Mage::helper('translator/sync')->iterator();
     	$this->getResponse()->setBody(json_encode($output));
     }
-    
-    public function importThemeCsvsAction() {
-    	$this->loadLayout();
-    	
-    	$sync = Mage::helper('translator/sync');
-    	$sync->init($sync::THEME_SCAN_ACTION);
-    	Mage::helper('translator/queue')->init($sync::THEME_QUEUE_NAME);
-    	Mage::helper('translator/importer')->pushThemeCsvsToQueue();
-    	
-    	$messages = $this->getLayout()->createBlock('core/text');
-    	$messages->setText('<div id="magestance-messages"></div>');
-    	$this->_addContent($messages);
-    	
-    	$head = $this->getLayout()->getBlock('head');
-    	$head->addJs('magestance/sync.js');
-    	
-    	$this->renderLayout();
-    }
-    
+
     public function pagescanAction() {
     	$this->loadLayout();
     	$this->_setActiveMenu('translator/pagescan');

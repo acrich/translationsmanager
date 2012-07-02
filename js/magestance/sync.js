@@ -20,7 +20,7 @@ Sync.prototype = {
                 	if (data.state) {
                 		Sync.prototype.run();
                 	} else {
-                		$('magestance-messages').insert(' and done.');
+                		$('magestance-messages').insert(' Done.');
                 	}
                 },
             });

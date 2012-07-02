@@ -80,7 +80,7 @@ class Magestance_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		$queue = Mage::helper('translator/queue');
 		
 		$queue->setFirst($sync::CSV_QUEUE_NAME, $data);
-		$queue->prepareBatches($sync::CSV_QUEUE_NAME, 30);
+		$queue->prepareBatches($sync::CSV_QUEUE_NAME, Mage::getStoreConfig('translator/options/batch_size'));
 		
 		$queue->setRegisterData('sync', array(
 				'completed' => 0, 
@@ -147,7 +147,7 @@ class Magestance_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		$queue = Mage::helper('translator/queue');
 		
 		$queue->setFirst($sync::THEME_QUEUE_NAME, $data);
-		$queue->prepareBatches($sync::THEME_QUEUE_NAME, 30);
+		$queue->prepareBatches($sync::THEME_QUEUE_NAME, Mage::getStoreConfig('translator/options/batch_size'));
 		
 		$queue->setRegisterData('sync', array(
 				'completed' => 0,

@@ -168,9 +168,6 @@
     </adminhtml>
     <default>
         <paypal>
-            <style>
-                <logo>nowAccepting_150x60</logo>
-            </style>
             <wpp>
                 <api_password backend_model="adminhtml/system_config_backend_encrypted"/>
                 <api_signature backend_model="adminhtml/system_config_backend_encrypted"/>

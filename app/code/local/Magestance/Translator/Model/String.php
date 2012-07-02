@@ -17,16 +17,17 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		
 		$string_id = $this->getIdByParams($item);
 		if (!$string_id) {
-
-			preg_match_all("/%(?:[0-9]+\\\$)?[\+\-]?(?:[ 0]|\'.)?-?[0-9]*(?:\.[0-9]+)?[bcdeEufFgGosxX]/", $item['string'], $results);
-			$parameters = array();
-			for ($i = 0; $i < count($results[0]); $i++) {
-				$parameters[] = array('hardcoded' => true, 'position' => $i, 'orig_position' => $i, 'value' => '');
+			$data = array();
+			if (!isset($item['parameters'])) {
+				preg_match_all("/%(?:[0-9]+\\\$)?[\+\-]?(?:[ 0]|\'.)?-?[0-9]*(?:\.[0-9]+)?[bcdeEufFgGosxX]/", $item['string'], $results);
+				$item['parameters'] = array();
+				for ($i = 0; $i < count($results[0]); $i++) {
+					$item['parameters'][] = array('hardcoded' => true, 'position' => $i, 'orig_position' => $i, 'value' => '');
+				}
 			}
 			
-			$data = array();
+			$data['parameters'] = serialize($item['parameters']);
 			$data['string'] = serialize($item['string']);
-			$data['parameters'] = serialize($parameters);
 			$data['status'] = (isset($item['status'])) ? $item['status'] : 1;
 			$data['module'] = (array_key_exists('module', $item)) ? $item['module'] : null;
 
@@ -42,9 +43,8 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	public function updateItem($item)
 	{
 		$data = array();
-		
-		if (isset($item['param'])) {
-			$data['parameters'] = serialize($item['param']);
+		if (isset($item['parameters'])) {
+			$data['parameters'] = serialize($item['parameters']);
 		}
 		if (isset($item['status'])) {
 			$data['status'] = $item['status'];

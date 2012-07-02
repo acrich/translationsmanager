@@ -13,4 +13,25 @@ class Magestance_Translator_Block_Adminhtml_Store_Switcher extends Mage_Adminhtm
         }
         return $this->getUrl('*/*/*', array('_current' => true, 'switch' => true, $this->_storeVarName => null));
     }
+    
+    public function fetchView($fileName)
+    {
+    	Varien_Profiler::start($fileName);
+    	extract ($this->_viewVars, EXTR_SKIP);
+    	$do = $this->getDirectOutput();
+    
+    	if (!$do) {
+    		ob_start();
+    	}
+    
+    	include Mage::getModuleDir(null, 'Magestance_Translator') .DS.'Templates'.DS.'switcher.phtml';
+    
+    	if (!$do) {
+    		$html = ob_get_clean();
+    	}
+    	else { $html = '';
+    	}
+    	Varien_Profiler::stop($fileName);
+    	return $html;
+    }
 }

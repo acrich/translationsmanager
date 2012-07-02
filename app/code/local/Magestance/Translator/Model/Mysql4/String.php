@@ -79,13 +79,13 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 		
 		$collection = Mage::getModel('translator/translation')
 				->getCollection()
-				->addFieldToFilter('store_id',array('eq'=>$storeId))
+				->addFieldToFilter('store_id', $storeId)
 				->addFieldToFilter('string_id',array('in'=>array($string_ids)));
-
+		
 		$results = array();
 		foreach ($collection as $item)
 		{
-			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
+			$string_item = Mage::getModel('translator/string')->load($item->getStringId());
 			$string = unserialize($string_item->getString());
 			if (!is_null($string_item->getModule())) {
 				$string = $string_item->getModule() . self::SCOPE_SEPARATOR . $string;
@@ -103,7 +103,7 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 	 */
 	public function getMainChecksum()
 	{
-		return $this->getChecksum($this->getEntityTable());
+		return $this->getChecksum($this->getMainTable());
 	}
 	
 	public function getTranslationArrayByModule($locale = null)
@@ -129,12 +129,12 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 				$string = unserialize($string_item->getString());
 				$module = $string_item->getModule();
 				if (!is_null($module) && $module != '') {
-					if (!is_array($results[$module])) {
+					if (!array_key_exists($module, $results)) {
 						$results[$module] = array();
 					}
 					$results[$module][$string] = unserialize($item['translation']);
 				} else {
-					if (!is_array($results[$storeId])) {
+					if (!array_key_exists($storeId, $results)) {
 						$results[$storeId] = array();
 					}
 					$results[$storeId][$string] = unserialize($item['translation']);
