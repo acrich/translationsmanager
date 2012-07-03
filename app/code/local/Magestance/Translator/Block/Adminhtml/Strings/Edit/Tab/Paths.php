@@ -12,6 +12,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Paths extends Mage_
 		$this->setId('translator_paths');
 		$this->setDefaultSort('position');
 		$this->setDefaultDir('ASC');
+		$this->setUseAjax(true);
 	}
 	
 	/**
@@ -59,5 +60,21 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Paths extends Mage_
 				'index'     => 'offset',
 		));
 		return parent::_prepareColumns();
+	}
+	
+	public function getGridUrl()
+	{
+		return $this->getUrl('*/*/pathsGrid', array('_current' => true));
+	}
+	
+	public function getSelectedPaths()
+	{
+		$paths = array();
+		$collection = Mage::getModel('translator/path')->getCollection()
+			->addFieldToFilter('string_id', Mage::registry('translator_data')->getTranslationId());
+		foreach ($collection as $path) {
+			$paths[$path->getPathId()] = $path->getData();
+		}
+		return $paths;
 	}
 }

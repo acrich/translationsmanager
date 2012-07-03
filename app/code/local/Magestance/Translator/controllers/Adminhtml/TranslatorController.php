@@ -73,6 +73,14 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 			$this->_redirect('*/*/');
 		}
 	}
+	
+	public function pathsGridAction()
+	{
+		$this->getResponse()->setBody(
+				$this->getLayout()->createBlock('translator/adminhtml_strings_edit_tab_paths', 'translator.strings.paths')
+				->toHtml()
+		);
+	}
  
 	public function newAction() {
 		$this->_forward('edit');
