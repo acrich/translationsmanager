@@ -89,7 +89,6 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 	public function saveAction() {
 		if ($data = $this->getRequest()->getPost()) {
 			try {
-				
 				$params = explode('&&&', $data['param'], -1);
 				unset($data['param']);
 				$data['parameters'] = array();
@@ -116,7 +115,6 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 				}
 				
 				$data['store_id'] = Mage::helper('translator')->getCurrentStore();
-				
 				Mage::getModel('translator/translate')->addEntry($data);
 
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('translator')->__('Item was successfully saved'));

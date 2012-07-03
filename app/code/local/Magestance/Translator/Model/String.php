@@ -17,7 +17,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 				preg_match_all("/%(?:[0-9]+\\\$)?[\+\-]?(?:[ 0]|\'.)?-?[0-9]*(?:\.[0-9]+)?[bcdeEufFgGosxX]/", $item['string'], $results);
 				$item['parameters'] = array();
 				for ($i = 0; $i < count($results[0]); $i++) {
-					$item['parameters'][] = array('hardcoded' => true, 'position' => $i, 'orig_position' => $i, 'value' => '');
+					$item['parameters'][] = array('hardcoded' => true, 'code_position' => $i, 'position' => $i, 'value' => '');
 				}
 			}
 			
@@ -38,7 +38,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	public function updateItem($item)
 	{
 		$string_id = $this->getResource()->getIdByParams($item);
-		if ($string_id != $item['string_id']) {
+		if ($string_id && $string_id != $item['string_id']) {
 			$this->load($item['string_id'])->delete();
 		}
 		 

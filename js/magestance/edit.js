@@ -8,11 +8,14 @@ StrForm.prototype = {
 						var element = event.element();
 						var checked = element.getValue();
 						var tds = element.ancestors()[1];
-						var param = tds.select("[type=\'text\']");
+						var val = tds.select("[name=\'value\']");
+						var pos = tds.select("[name=\'code_position\']");
 						if (checked) {
-							param.each(function(v) {v.disabled = true;});
+							val.each(function(v) {v.disabled = true;});
+							pos.each(function(v) {v.disabled = false;});
 						} else {
-							param.each(function(v) {v.disabled = false;});
+							val.each(function(v) {v.disabled = false;});
+							pos.each(function(v) {v.disabled = true;});
 						}
 					});
 				});
@@ -48,14 +51,22 @@ StrForm.prototype = {
 		
 		addParam : function(element) {
 			var tr = element.ancestors()[1];
-			var key = tr.siblings().length;
+			var key = 0;
+			for (var i=0;i<tr.siblings().length;i++) {
+				if (key<parseInt(tr.siblings()[i].identify())) {
+					key = parseInt(tr.siblings()[i].identify());
+				}
+			}
+			key++;
+			key = key.toString();
 			tr.insert({before : "<tr id='" + key + "'>" +
-					"<td style='border: 1px solid #AAA; width:80px;'>" +
-					"<input style='width:100%;' class='input-text hardcoded' name='hardcoded' id='hardcoded"+key+"' type='checkbox' />" +
-					"</td><td style='border: 1px solid #AAA; padding: 2px; width: 80px;'>" +
-					"<input class='input-text position' name='position' style='width:70%; padding: 3px;' type='text' value='" + key + "' /></td>" +
-					"<td style='border: 1px solid #AAA; padding: 2px; width: 400px;'>" +
-					"<input class='input-text param' name='param' style='width:96%; padding: 3px;' type='text' value='' /></td>" +
+					"<td style='border: 1px solid #AAA; padding: 2px; width: 60px;'>" +
+					"<input class='input-text position' name='position' style='width:70%; padding: 3px;' type='text' value='" + key + "' />" +
+					"</td><td style='border: 1px solid #AAA; width:140px; padding: 2px;'>" +
+					"<input style='width:40px;;' class='input-text hardcoded' name='hardcoded' id='hardcoded"+key+"' type='checkbox' />" +
+					"<input style='width:40px;' class='input-text code_position' name='code_position' type='text' value='' /></td>" +
+					"</td><td style='border: 1px solid #AAA; padding: 2px; width: 360px;'>" +
+					"<input class='input-text value' name='value' style='width:96%; padding: 3px;' type='text' value='' /></td>" +
 					"<td style='border: 1px solid #AAA; text-align: right; padding: 2px;'>" +
 					"<input type='button' value='Remove Parameter' class='remove-param' onclick='str_form.removeParam(this)' /><td>" +
 					"</tr>"});
@@ -63,11 +74,14 @@ StrForm.prototype = {
 					var element = event.element();
 					var checked = element.getValue();
 					var tds = element.ancestors()[1];
-					var param = tds.select("[type=\'text\']");
+					var val = tds.select("[name=\'value\']");
+					var pos = tds.select("[name=\'code_position\']");
 					if (checked) {
-						param.each(function(v) {v.disabled = true;});
+						val.each(function(v) {v.disabled = true;});
+						pos.each(function(v) {v.disabled = false;});
 					} else {
-						param.each(function(v) {v.disabled = false;});
+						val.each(function(v) {v.disabled = false;});
+						pos.each(function(v) {v.disabled = true;});
 					}
 				});
 		},

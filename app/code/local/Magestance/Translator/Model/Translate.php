@@ -119,20 +119,17 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 		$params = unserialize($string->getParameters());
 		$args2 = $args;
 		if (is_array($params)) {
+			$callback = function($matches) {
+				$var = Mage::getModel('core/variable');
+				$var->setStoreId(Mage::app()->getStore()->getId());
+				return $var->loadByCode($matches[1])->getValue('html');
+			};
 			foreach ($params as $key => $param) {
-				if (!$param['hardcoded']) {
-					if ($param['orig_position'] != $param['position']) {
-						$args2[$param['orig_position']] = $args[$param['position']];
-					}
-					if ($param['value'] != '') {
-						$callback = function($matches) {
-							$var = Mage::getModel('core/variable');
-							$var->setStoreId(Mage::app()->getStore()->getId());
-							return $var->loadByCode($matches[1])->getValue('html');
-						};
-						$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
-						$args2[$param['position']] = $param['value'];
-					}
+				if ($param['hardcoded']) {
+					$args2[$param['position']] = $args[$param['code_position']];
+				} else {
+					$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
+					$args2[$param['position']] = $param['value'];
 				}
 			}
 		}
