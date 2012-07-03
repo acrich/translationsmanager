@@ -10,11 +10,6 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	
 	public function createItem($item)
 	{
-		
-		if (strpos($item['string'], '::') !== false) {
-			list($item['module'], $item['string']) = explode('::', $item['string']);
-		}
-		
 		$string_id = $this->getResource()->getIdByParams($item);
 		if (!$string_id) {
 			$data = array();
@@ -42,7 +37,13 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	
 	public function updateItem($item)
 	{
+		$string_id = $this->getResource()->getIdByParams($item);
+		if ($string_id != $item['string_id']) {
+			$this->load($item['string_id'])->delete();
+		}
+		 
 		$data = array();
+		
 		if (isset($item['parameters'])) {
 			$data['parameters'] = serialize($item['parameters']);
 		}
@@ -55,18 +56,14 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		if (isset($item['string']) && $item['string'] != '') {
 			$data['string'] = $item['string'];
 		}
-		$data['string_id'] = $item['string_id'];
+		$data['string_id'] = $string_id;
 
-		$this->load($item['string_id'])->setData($data)->save();
+		$this->load($data['string_id'])->setData($data)->save();
 	}
 	
 	public function getIdByString($string)
 	{
 		$item = array('string' => $string);
-		if (strpos($item['string'], '::') !== false) {
-			list($item['module'], $item['string']) = explode('::', $item['string']);
-		}
-		
 		return $this->getResource()->getIdByParams($item);
 	}
 	

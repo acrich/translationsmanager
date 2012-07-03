@@ -135,6 +135,10 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 	
 	public function getIdByParams($item)
 	{
+		if (strpos($item['string'], '::') !== false) {
+			list($item['module'], $item['string']) = explode('::', $item['string']);
+		}
+		
 		$adapter = $this->_getReadAdapter();
 		$string = $adapter->quote($item['string']);
 	
