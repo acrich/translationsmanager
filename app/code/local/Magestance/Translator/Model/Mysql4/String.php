@@ -93,7 +93,7 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 		foreach ($collection as $item)
 		{
 			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
-			if ($string_item->getStatus()) {
+			if ($string_item->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
 				$module = $string_item->getModule();
 				if (is_null($module) || $module == '') {
 					$scope = $storeId;
@@ -116,7 +116,7 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 		foreach ($collection as $item)
 		{
 			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
-			if ($string_item->getStatus()) {
+			if ($string_item->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
 				$string = $string_item->getString();
 				$module = $string_item->getModule();
 				if (!is_null($module) && $module != '') {

@@ -20,4 +20,9 @@ class Magestance_Translator_Model_Status extends Varien_Object
             array('value'=>self::STATUS_DISABLED, 'label'=>Mage::helper('translator')->__('No')),
     	);
     }
+    
+    public function getDisabledCode()
+    {
+    	return self::STATUS_DISABLED;
+    }
 }

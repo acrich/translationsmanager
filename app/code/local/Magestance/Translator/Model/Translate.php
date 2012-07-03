@@ -116,20 +116,23 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 			$string = $text;
 		}
 		$string = Mage::getModel('translator/string')->getItemByString($string);
-		$params = unserialize($string->getParameters());
 		$args2 = $args;
-		if (is_array($params)) {
-			$callback = function($matches) {
-				$var = Mage::getModel('core/variable');
-				$var->setStoreId(Mage::app()->getStore()->getId());
-				return $var->loadByCode($matches[1])->getValue('html');
-			};
-			foreach ($params as $key => $param) {
-				if ($param['hardcoded']) {
-					$args2[$param['position']] = $args[$param['code_position']];
-				} else {
-					$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
-					$args2[$param['position']] = $param['value'];
+		
+		if ($string->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
+			$params = unserialize($string->getParameters());
+			if (is_array($params)) {
+				$callback = function($matches) {
+					$var = Mage::getModel('core/variable');
+					$var->setStoreId(Mage::app()->getStore()->getId());
+					return $var->loadByCode($matches[1])->getValue('html');
+				};
+				foreach ($params as $key => $param) {
+					if ($param['hardcoded']) {
+						$args2[$param['position']] = $args[$param['code_position']];
+					} else {
+						$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
+						$args2[$param['position']] = $param['value'];
+					}
 				}
 			}
 		}
