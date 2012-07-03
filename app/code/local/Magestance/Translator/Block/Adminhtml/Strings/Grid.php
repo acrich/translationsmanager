@@ -79,7 +79,6 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
           'align'     =>'left',
           'index'     => 'string',
       	  'filter_index' => 'main_table.string',
-      	  //'renderer' => 'Magestance_Translator_Block_Adminhtml_Strings_Renderer_String'
       ));
 
       $this->addColumn('translation', array(
@@ -87,7 +86,6 @@ class Magestance_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml_
           'align'     =>'left',
           'index'     => 'translation',
       	  'filter_index' => 'translator_translation.translation',
-      	  //'renderer' => 'Magestance_Translator_Block_Adminhtml_Strings_Renderer_Translation'
       ));
       
       $this->addColumn('module', array(
