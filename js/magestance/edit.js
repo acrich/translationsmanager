@@ -64,7 +64,7 @@ StrForm.prototype = {
 					"<input class='input-text position' name='position' style='width:70%; padding: 3px;' type='text' value='" + key + "' />" +
 					"</td><td style='border: 1px solid #AAA; width:140px; padding: 2px;'>" +
 					"<input style='width:40px;;' class='input-text hardcoded' name='hardcoded' id='hardcoded"+key+"' type='checkbox' />" +
-					"<input style='width:40px;' class='input-text code_position' name='code_position' type='text' value='' /></td>" +
+					"<input style='width:40px;' class='input-text code_position' name='code_position' type='text' value='' disabled /></td>" +
 					"</td><td style='border: 1px solid #AAA; padding: 2px; width: 360px;'>" +
 					"<input class='input-text value' name='value' style='width:96%; padding: 3px;' type='text' value='' /></td>" +
 					"<td style='border: 1px solid #AAA; text-align: right; padding: 2px;'>" +
