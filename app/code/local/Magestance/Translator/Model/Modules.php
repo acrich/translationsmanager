@@ -10,6 +10,9 @@ class Magestance_Translator_Model_Modules extends Varien_Object
 		$result = array(0 => array('value' => '', 'label' => 'None'));
 		foreach ($modules as $name => $disabled) {
 			if (!$disabled) {
+				if ($name == 'Mage_Admin') {
+					$name = 'Mage_Adminhtml';
+				}
 				$result[] = array('value' => $name, 'label' => $name);
 			}
 		}
