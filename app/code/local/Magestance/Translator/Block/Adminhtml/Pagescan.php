@@ -11,6 +11,8 @@ class Magestance_Translator_Block_Adminhtml_Pagescan extends Mage_Adminhtml_Bloc
         $this->_mode = 'pagescan';
         
         $this->_updateButton('save', 'label', Mage::helper('translator')->__('Scan Page'));
+        $this->_removeButton('reset');
+        $this->_removeButton('back');
         
         $this->_headerText = Mage::helper('translator')->__('Scan A Page');
 	}
