@@ -111,11 +111,17 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 		}
     	
 		if ($text instanceof Mage_Core_Model_Translate_Expr) {
-			$string = $text->getCode();
+			$string_id = Mage::getModel('translator/string')->getIdByString($text->getCode());
+			if (!$string_id) {
+				$string_id = Mage::getModel('translator/string')->getResource()->getIdByParams(array(
+						'string' => $text->getText(),
+						'module' => null
+						));
+			}
+			$string = Mage::getModel('translator/string')->load($string_id);
 		} else {
-			$string = $text;
+			$string = Mage::getModel('translator/string')->getItemByString($text);
 		}
-		$string = Mage::getModel('translator/string')->getItemByString($string);
 		$args2 = $args;
 		
 		if ($string->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
