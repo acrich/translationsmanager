@@ -13,6 +13,11 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		$string_id = $this->getResource()->getIdByParams($item);
 		if (!$string_id) {
 			$data = array();
+			
+			if (strpos($item['string'], '::') !== false) {
+				list($item['module'], $item['string']) = explode('::', $item['string']);
+			}
+			
 			if (!isset($item['parameters'])) {
 				preg_match_all("/%(?:[0-9]+\\\$)?[\+\-]?(?:[ 0]|\'.)?-?[0-9]*(?:\.[0-9]+)?[bcdeEufFgGosxX]/", $item['string'], $results);
 				$item['parameters'] = array();
@@ -49,6 +54,9 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 			$data['module'] = $item['module'];
 		}
 		if (isset($item['string']) && $item['string'] != '') {
+			if (strpos($item['string'], '::') !== false) {
+				list($item['module'], $item['string']) = explode('::', $item['string']);
+			}
 			$data['string'] = $item['string'];
 		}
 		
