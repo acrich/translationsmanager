@@ -80,7 +80,7 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     public function translate($args)
     {
     	$text = array_shift($args);
-    	
+
     	$param = Mage::getModel('translator/observer');
     	$param = $param::FLAG_SHOW_LAYOUT;
     	
@@ -111,7 +111,7 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
 		}
     	
 		if ($text instanceof Mage_Core_Model_Translate_Expr) {
-			$string = $text->getText();
+			$string = $text->getCode();
 		} else {
 			$string = $text;
 		}

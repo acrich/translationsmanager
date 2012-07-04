@@ -97,13 +97,15 @@ class Magestance_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_A
 				$module = $string_item->getModule();
 				if (is_null($module) || $module == '') {
 					$scope = $storeId;
+					$string = $string_item->getString();
 				} else {
 					$scope = $module;
+					$string = $module . Mage_Core_Model_Translate::SCOPE_SEPARATOR . $string_item->getString();
 				}
 				if (!array_key_exists($scope, $results)) {
 					$results[$scope] = array();
 				}
-				$results[$scope][$string_item->getString()] = $item['translation'];
+				$results[$scope][$string] = $item['translation'];
 			}
 		}
 	

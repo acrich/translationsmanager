@@ -36,12 +36,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 	}
 	
 	public function updateItem($item)
-	{
-		$string_id = $this->getResource()->getIdByParams($item);
-		if ($string_id && $string_id != $item['string_id']) {
-			$this->load($item['string_id'])->delete();
-		}
-		 
+	{		 
 		$data = array();
 		
 		if (isset($item['parameters'])) {
@@ -56,9 +51,16 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		if (isset($item['string']) && $item['string'] != '') {
 			$data['string'] = $item['string'];
 		}
-		$data['string_id'] = $string_id;
-
-		$this->load($data['string_id'])->setData($data)->save();
+		
+		$string_id = $this->getResource()->getIdByParams($item);
+		if ($string_id && $string_id != $item['string_id']) {
+			$this->load($item['string_id'])->delete();
+			$data['string_id'] = $string_id;
+			$this->load($string_id)->setData($data)->save();
+		} else {
+			$data['string_id'] = $item['string_id'];
+			$this->load($data['string_id'])->setData($data)->save();
+		}
 	}
 	
 	public function getIdByString($string)
