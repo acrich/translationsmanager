@@ -35,7 +35,7 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 			$string_id = $this->getStringId();
 		} else {
 			$item['string_id'] = $string_id;
-			$this->updateItem($item);
+			$string_id = $this->updateItem($item);
 		}
 		return $string_id;
 	}
@@ -64,11 +64,12 @@ class Magestance_Translator_Model_String extends Mage_Core_Model_Abstract
 		if ($string_id && $string_id != $item['string_id']) {
 			$this->load($item['string_id'])->delete();
 			$data['string_id'] = $string_id;
-			$this->load($string_id)->setData($data)->save();
+			$this->load($data['string_id'])->setData($data)->save();
 		} else {
 			$data['string_id'] = $item['string_id'];
 			$this->load($data['string_id'])->setData($data)->save();
 		}
+		return $data['string_id'];
 	}
 	
 	public function getIdByString($string)

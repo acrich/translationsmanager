@@ -175,9 +175,10 @@ class Magestance_Translator_Model_Translate extends Mage_Core_Model_Translate
     	if (!isset($item['string_id'])) {
     		$item['string_id'] = Mage::getModel('translator/string')->createItem($item);
     	} else {
-    		Mage::getModel('translator/string')->updateItem($item);
+    		$item['string_id'] = Mage::getModel('translator/string')->updateItem($item);
     	}
     	Mage::getModel('translator/translation')->createItem($item);
+    	return $item['string_id'];
     }
     
     public function addMultipleEntries($batch)
