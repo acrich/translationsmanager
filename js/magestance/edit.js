@@ -53,11 +53,11 @@ StrForm.prototype = {
 			var tr = element.ancestors()[1];
 			var key = 0;
 			for (var i=0;i<tr.siblings().length;i++) {
-				if (key<parseInt(tr.siblings()[i].identify())) {
+				if (key<=parseInt(tr.siblings()[i].identify())) {
 					key = parseInt(tr.siblings()[i].identify());
+					key++;
 				}
 			}
-			key++;
 			key = key.toString();
 			tr.insert({before : "<tr id='" + key + "'>" +
 					"<td style='border: 1px solid #AAA; padding: 2px; width: 60px;'>" +
