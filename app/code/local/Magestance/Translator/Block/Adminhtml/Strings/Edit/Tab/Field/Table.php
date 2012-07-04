@@ -12,7 +12,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Field_Table extends
     	$html = '<table style="width:705px; border-collapse:collapse;" id="' . $this->getHtmlId() . '"'. $this->serialize($this->getHtmlAttributes()) .'>';
         $html .= '<tr><th>Position</th><th>Value From Code</th><th>Value</th><th></th></tr>';
         $values = unserialize($this->getValue());
-        if (count($values)) {
+        if (is_array($values) && count($values)) {
 	        foreach ($values as $key => $value) {
 	        	$checked = ($value['hardcoded'] == '0') ? '' : 'checked';
 	        	$disabled = ($value['hardcoded'] == '0') ? '' : 'disabled';
