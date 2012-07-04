@@ -6,7 +6,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Widget_Button extends Mage_A
 	protected function _toHtml()
 	{
 		$html = '<span class="filter">'
-				. '<label>Path: </label>'
+				. '<label>'.Mage::helper('translator')->__('Path:').' </label>'
 				. '<input type="text" id="stringGrid_filter_path" name="path" class="input-text no-changes" value="'
 				. $this->getInputValue()
 				. '" style="width:330px;"></input></span>&nbsp;&nbsp;&nbsp;';

@@ -10,7 +10,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Field_Table extends
     {
         
     	$html = '<table style="width:705px; border-collapse:collapse;" id="' . $this->getHtmlId() . '"'. $this->serialize($this->getHtmlAttributes()) .'>';
-        $html .= '<tr><th>Position</th><th>Value From Code</th><th>Value</th><th></th></tr>';
+        $html .= '<tr><th>'.Mage::helper('translator')->__('Position').'</th><th>'.Mage::helper('translator')->__('Value From Code').'</th><th>'.Mage::helper('translator')->__('Value').'</th><th></th></tr>';
         $values = unserialize($this->getValue());
         if (is_array($values) && count($values)) {
 	        foreach ($values as $key => $value) {
@@ -27,7 +27,7 @@ class Magestance_Translator_Block_Adminhtml_Strings_Edit_Tab_Field_Table extends
 	        }
         }
         $html .= '<tr><td></td><td></td><td></td><td style="text-align:right;">';
-        $html .= '<input type="button" value="Add Another Parameter" id="add-param" onclick="str_form.addParam(this)" /></td></tr>';
+        $html .= '<input type="button" value="'.Mage::helper('translator')->__('Add Another Parameter').'" id="add-param" onclick="str_form.addParam(this)" /></td></tr>';
         $html .= '</table>';
         $html .= '<input class="input-text" name="param" id="param" style="display:none;" type="text" value="" />';
         $html .= $this->getAfterElementHtml();
