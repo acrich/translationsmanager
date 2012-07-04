@@ -94,7 +94,7 @@ class Magestance_Translator_Adminhtml_TranslatorController extends Mage_Adminhtm
 				$data['parameters'] = array();
 				foreach ($params as $param) {
 					$param = explode('>>>', $param);
-					if (!is_array($data['parameters'][$param[0]])) {
+					if (!array_key_exists($param[0], $data['parameters']) || !is_array($data['parameters'][$param[0]])) {
 						$data['parameters'][$param[0]] = array();
 					}
 					if ($param[1] == 'hardcoded') {
