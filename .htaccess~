@@ -207,3 +207,7 @@
 ## http://developer.yahoo.com/performance/rules.html#etags
 
     #FileETag none
+
+############################################
+## Setting Magento to developer mode to see more error info.
+SetEnv MAGE IS DEVELOPER MODE 1
