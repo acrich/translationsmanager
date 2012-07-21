@@ -19,7 +19,7 @@ class Wheelbarrow_Translator_Model_Mysql4_Translation extends Mage_Core_Model_My
     {
     	$translation = $object->getData('translation');
     	$translation = preg_replace( "/^\'(.*)\'$/U", "$1", $translation);
-    	$translation = preg_replace( "/\'\'/U", "\'", $translation);
+    	$translation = stripslashes($translation);
     	$object->setData('translation', $translation);
     
     	return $this;

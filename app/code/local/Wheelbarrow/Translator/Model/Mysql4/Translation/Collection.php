@@ -11,7 +11,7 @@ class Wheelbarrow_Translator_Model_Mysql4_Translation_Collection extends Mage_Co
 		foreach ($this as $item) {
 			$translation = $item->getData('translation');
     		$translation = preg_replace( "/^\'(.*)\'$/U", "$1", $translation);
-    		$translation = preg_replace( "/\'\'/U", "\'", $translation);
+    		$translation = stripslashes($translation);
     		$item->setData('translation', $translation);
 		}
 

@@ -80,7 +80,7 @@ class Wheelbarrow_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mo
 		foreach ($this as $item) {
 			$string = $item->getData('string');
 			$string = preg_replace( "/^\'(.*)\'$/U", "$1", $string);
-			$string = preg_replace( "/\'\'/U", "\'", $string);
+			$string = stripslashes($string);
 			$item->setData('string', $string);
 		}
 		
