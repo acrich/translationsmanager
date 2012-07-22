@@ -138,7 +138,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 							$args2[$param['position']] = $args[$param['code_position']];
 						}
 					} else {
-						$param['value'] = preg_replace_callback("/{{(.*)}}/U", $callback, $param['value']);
+						$param['value'] = preg_replace_callback("/{{customVar code=(.*)}}/U", $callback, $param['value']);
 						$args2[$param['position']] = $param['value'];
 					}
 				}
