@@ -63,19 +63,48 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Edit_Tab_Form extends Mage_
               ),
 
               array(
-                  'value'     => 2,
+                  'value'     => 0,
                   'label'     => Mage::helper('translator')->__('Disabled'),
               ),
           ),
       ));
       
+      $fieldset->addField('frontend', 'checkbox', array(
+      		'label'     => Mage::helper('translator')->__('Frontend'),
+      		'name'      => 'frontend',
+      		'onclick'   => 'this.value = this.checked ? 1 : 0;'
+      ));
+      
+      $fieldset->addField('adminhtml', 'checkbox', array(
+      		'label'     => Mage::helper('translator')->__('Adminhtml'),
+      		'name'      => 'adminhtml',
+      		'onclick'   => 'this.value = this.checked ? 1 : 0;'
+      ));
+      
+      $fieldset->addField('install', 'checkbox', array(
+      		'label'     => Mage::helper('translator')->__('Install'),
+      		'name'      => 'install',
+      		'onclick'   => 'this.value = this.checked ? 1 : 0;'
+      ));
+      
+      $formData = array();
       if (Mage::getSingleton('adminhtml/session')->getTranslatorData())
       {
-          $form->setValues(Mage::getSingleton('adminhtml/session')->getTranslatorData());
+      	Mage::log('getting data from session');
+          $formData = Mage::getSingleton('adminhtml/session')->getTranslatorData();
           Mage::getSingleton('adminhtml/session')->setTranslatorData(null);
       } elseif (Mage::registry('translator_data')) {
-          $form->setValues(Mage::registry('translator_data')->getData());
+      	Mage::log('getting data from registry');
+      	  $formData = Mage::registry('translator_data')->getData();
       }
+      
+      $form->setValues($formData);
+      
+      Mage::log($formData);
+      $form->getElement('frontend')->setIsChecked(!empty($formData['frontend']));
+      $form->getElement('adminhtml')->setIsChecked(!empty($formData['adminhtml']));
+      $form->getElement('install')->setIsChecked(!empty($formData['install']));
+      
       return parent::_prepareForm();
   }
 }

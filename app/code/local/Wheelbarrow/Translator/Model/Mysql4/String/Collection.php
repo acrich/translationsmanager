@@ -32,7 +32,7 @@ class Wheelbarrow_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mo
 			
 			$string_ids = array();
 			foreach ($store as $id) {
-				$strings = Mage::getModel('translator/translation')->getTranslatedStringsByStore($store);
+				$strings = Mage::getModel('translator/translation')->getTranslatedStringsByStore($id);
 				foreach ($strings as $string) {
 					$string_ids[] = $string;
 				}
@@ -59,14 +59,10 @@ class Wheelbarrow_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mo
 			if ($results = $connection->fetchAll($select)) {
 				$storeIds = array();
 				foreach ($results as $record) {
-					if (array_key_exists($record['string_id'], $storeIds)) {
-					$storeIds[$record['string_id']] .= ',' . $record['store_id'];
-					} else {
-						$storeIds[$record['string_id']] = $record['store_id'];
+					if (!array_key_exists($record['string_id'], $storeIds)) {
+					$storeIds[$record['string_id']] = array();
 					}
-				}				
-				foreach ($storeIds as $key => $record) {
-					$storeIds[$key] = explode(',', $record);
+					$storeIds[$record['string_id']][$record['store_id']] = $record['store_id'];
 				}
 				foreach ($this as $item) {	
 					if (!isset($storeIds[$item->getData('string_id')])) {

@@ -15,8 +15,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
   {
 	  $store_id = Mage::helper('translator')->getCurrentStore();
       $collection = Mage::getModel('translator/string')->getCollection();
-      $collection->getSelect()->joinLeft('translator_translation', 'main_table.string_id = translator_translation.string_id AND translator_translation.store_id = '.$store_id, array('translation', 'translation_id'));
-      
+
       $this->setCollection($collection);
       
       if ($this->getCollection()) {
@@ -29,6 +28,25 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       
       	if (is_null($filter)) {
       		$filter = $this->_defaultFilter;
+      		
+      		/**
+      		 * the path filter is without a join right now.
+      		 * same for the area filter when the filter is on.
+      		 * refactor the join statement, so you won't have it 4 times
+      		 * 
+      		 * in the end, remove the primary field.
+      		 * 
+      		*/
+      		
+      		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
+      		$where = 'main_table.string_id = translator_translation.string_id'
+	      				.' AND translator_translation.store_id = '.$store_id;
+      		$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
+      		$this->getCollection()
+	      		->getSelect()
+	      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
+      		Mage::log((String)$this->getCollection()->getSelect());
+      		Mage::helper('translator')->setArea('');
       	}
       
       	if (is_string($filter)) {
@@ -38,6 +56,28 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       			$string_ids = Mage::getModel('translator/path')->getStringIdsByPath($data['path']);
       			$this->getCollection()->addFieldToFilter('main_table.string_id' , array('in'=>$string_ids));
       			$this->getChild('path_filter')->setInputValue($data['path']);
+      		}
+      		
+      		if (array_key_exists('area', $data)) {
+      			Mage::helper('translator')->setArea(strtolower($data['area']));
+      		} else {
+      			Mage::helper('translator')->setArea('');
+      		}
+      		
+      		if (Mage::helper('translator')->getArea() == '') {
+			
+      		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
+      		$where = 'main_table.string_id = translator_translation.string_id'
+	      				.' AND translator_translation.store_id = '.$store_id;
+      		$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
+      		$this->getCollection()
+	      		->getSelect()
+	      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
+      		Mage::log((String)$this->getCollection()->getSelect());
+      		Mage::helper('translator')->setArea('');
+      		
+      		} else {
+      			$this->getCollection()->addFieldToFilter('translator_translation.'.Mage::helper('translator')->getArea() , array('eq'=>1));
       		}
       		
       		$this->_setFilterValues($data);
@@ -146,6 +186,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
   
   protected function _afterLoadCollection()
   {
+  	
   	$this->getCollection()->walk('afterLoad');
   	foreach ($this->getCollection() as $item) {
   		$translation = $item->getData('translation');
@@ -211,9 +252,15 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
   	return $this->getChildHtml('path_filter');
   }
   
+  public function getAreaFilterHtml()
+  {
+  	return $this->getChildHtml('area_filter');
+  }
+  
   public function getMainButtonsHtml()
   {
-  	$html = $this->getPathFilterHtml();
+  	$html = $this->getAreaFilterHtml();
+  	$html .= $this->getPathFilterHtml();
   	$html .= parent::getMainButtonsHtml();
   	return $html;
   }
@@ -223,7 +270,15 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
   	$this->setChild('path_filter',
   			$this->getLayout()->createBlock('translator/adminhtml_strings_widget_button')
   			->setData(array(
-  					'label'     => Mage::helper('translator')->__('Filter By Path'),
+  					'label'     => Mage::helper('translator')->__('Path'),
+  					'onclick'   => $this->getJsObjectName().'.doFilter()',
+  					'class'   => 'task'
+  			))
+  	);
+  	$this->setChild('area_filter',
+  			$this->getLayout()->createBlock('translator/adminhtml_strings_widget_area_button')
+  			->setData(array(
+  					'label'     => Mage::helper('translator')->__('Area'),
   					'onclick'   => $this->getJsObjectName().'.doFilter()',
   					'class'   => 'task'
   			))

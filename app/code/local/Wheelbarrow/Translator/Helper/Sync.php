@@ -52,28 +52,12 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 	public function iterator()
 	{	
 		$register = $this->getRegister();
-		
+		Mage::log($register);
 		$output = array();
 		$output['state'] = $register['state'];
 
 		switch ($register['action']) {
 			case self::CSV_SCAN_ACTION:
-					$batch = $this->popBatch();
-					if (is_array($batch) && count($batch)) {
-						Mage::getModel('translator/translate')->addMultipleEntries($batch);
-						
-						$register['data']['completed'] += count($batch);
-						$this->setRegister($register);
-						
-						$output['data'] = 'processed '.$register['data']['completed']. ' entries out of '.$register['data']['total'].' total.';
-						$output['state'] = true;
-						break;
-					} else {
-						//@todo remove close().
-						$this->close();
-						$output['state'] = false;
-						break;
-					}
 			case self::THEME_SCAN_ACTION:
 						$batch = $this->popBatch();
 						if (is_array($batch) && count($batch)) {
@@ -86,8 +70,7 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 							$output['state'] = true;
 							break;
 						} else {
-							//@todo remove close().
-							$this->close();
+							$this->setRegister(array('state' => false));
 							$output['state'] = false;
 							break;
 						}
@@ -102,10 +85,5 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 		}
 		
 		return $output;
-	}
-	
-	public function close()
-	{
-		$this->setRegister(array('state' => false));
 	}
 }

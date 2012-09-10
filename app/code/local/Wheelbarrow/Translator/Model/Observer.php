@@ -64,7 +64,7 @@ class Wheelbarrow_Translator_Model_Observer
 	{
 		if (array_key_exists(self::FLAG_SHOW_LAYOUT, $_GET))
 		{
-			Mage::helper('translator/sync')->close();
+			Mage::helper('translator/sync')->setRegister(array('state' => false));
 		}
 	}
 }

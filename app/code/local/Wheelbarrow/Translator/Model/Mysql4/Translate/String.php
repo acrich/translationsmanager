@@ -131,8 +131,11 @@ class Wheelbarrow_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mod
     	
     	$string_id = Mage::getModel('translator/string')->getIdByString($string);
     	
-    	Mage::getModel('translator/translation')->deleteTranslation($string_id, $locale, $storeId);
-
+    	Mage::getModel('translator/translation')->deleteTranslation(array(
+    																	'string_id' => $string_id, 
+    																	'locale' => $locale, 
+    																	'store_id' => $storeId
+    																));
     	return $this;
     }
     
@@ -159,9 +162,11 @@ class Wheelbarrow_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mod
     				'string' => $string, 
     				'translation' => $translate, 
     				'store_id' => $storeId,
-    				'locale' => $locale
+    				'locale' => $locale,
+    				'areas' => array(Mage::getDesign()->getArea()),
+    				'strict' => false
     			);
-
+    	
     	Mage::getModel('translator/translate')->addEntry($item);
     
     	return $this;

@@ -30,7 +30,7 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 			$data['string'] = $item['string'];
 			$data['status'] = (isset($item['status'])) ? $item['status'] : 1;
 			$data['module'] = (array_key_exists('module', $item)) ? $item['module'] : null;
-
+			
 			$this->setData($data)->save();
 			$string_id = $this->getStringId();
 		} else {
@@ -110,7 +110,7 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 			}
 		} else {
 			$data['string_id'] = (isset($string_id)) ? $string_id : $item['string_id'];
-			if ($data['string_id'] != $item['string_id']) {
+			if (isset($item['string_id']) && $data['string_id'] != $item['string_id']) {
 				$this->load($item['string_id'])->delete();
 			}
 		}
@@ -122,15 +122,22 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 		return $this->setData($data)->save()->getStringId();
 	}
 	
+	public function setItem($item) {
+		if (isset($item['string_id']) && $item['string_id'] != 0) {
+			$item['string_id'] = $this->updateItem($item);
+		} else {
+			$item['string_id'] = $this->createItem($item);
+		}
+		return $item['string_id'];
+	}
+	
 	public function getIdByString($string)
 	{
-		$item = array('string' => $string);
-		return $this->getResource()->getIdByParams($item);
+		return $this->getResource()->getIdByParams(array('string' => $string));
 	}
 	
 	public function getItemByString($string)
 	{
-		$id = $this->getIdByString($string);
-		return $this->load($id);
+		return $this->load($this->getIdByString($string));
 	}
 }

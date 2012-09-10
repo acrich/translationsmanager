@@ -5,14 +5,11 @@ class Wheelbarrow_Translator_Model_Modules extends Varien_Object
 
 	public function toOptionArray()
 	{
-		$modules = Mage::getStoreConfig('advanced/modules_disable_output');
-		
+		$modules = Mage::getConfig()->getNode('modules')->children();
 		$result = array(0 => array('value' => '', 'label' => 'None'));
-		foreach ($modules as $name => $disabled) {
-			if (!$disabled) {
-				if ($name == 'Mage_Admin') {
-					$name = 'Mage_Adminhtml';
-				}
+		foreach ($modules as $module) {
+			if ($module->active) {
+				$name = $module->getName();
 				$result[] = array('value' => $name, 'label' => $name);
 			}
 		}

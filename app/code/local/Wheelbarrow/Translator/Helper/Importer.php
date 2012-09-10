@@ -38,14 +38,16 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 						'translation' => $translation,
 						'locale' => $file_description['locale'],
 						'fileName' => $file_description['fileName'],
-						'module' => $file_description['moduleName']
+						'module' => $file_description['moduleName'],
+						'areas' => $file_description['areas'],
+						'strict' => true
 				);
 			}
 		}
 		return $data;
 	}
 	
-	public function pushCsvFilesToQueue()
+	protected function _getFilesList()
 	{
 		$files = array();
 		foreach (array('frontend', 'adminhtml', 'install') as $area) {
@@ -56,22 +58,44 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 					foreach ($modules as $moduleName => $info) {
 						$info = $info->asArray();
 						foreach ($info['files'] as $file) {
-							$files[$moduleName] = $file;
+							if (!isset($files[$file])) {
+								$files[$file] = array('modules' => array(), 'areas' => array());
+							}
+							
+							$files[$file]['modules'][$moduleName] = $moduleName;
+							
+							if (!isset($files[$file]['areas'][$moduleName])) {
+								$files[$file]['areas'][$moduleName] = array();
+							}
+							$files[$file]['areas'][$moduleName][] = $area;
 						}
 					}
 				}
 			}
 		}
+		return $files;
+	}
+	
+	public function pushCsvFilesToQueue()
+	{
+		$files = $this->_getFilesList();
 	
 		$data = array();
 		$locales = $this->_getLocales();
 		$basedir = Mage::getBaseDir('locale');
 		foreach ($locales as $locale) {
 			if (file_exists(Mage::getBaseDir('locale') . DS . $locale)) {
-				foreach ($files as $moduleName => $file) {
+				foreach ($files as $file => $file_data) {
 					$fileName = $basedir . DS . $locale . DS . $file;
-					$pairs = $this->_processCsvFile(array('locale' => $locale, 'fileName' => $fileName, 'moduleName' => $moduleName));
-					$data = array_merge($data, (array)$pairs);
+					foreach ($file_data['modules'] as $moduleName) {
+						$pairs = $this->_processCsvFile(array(
+															'locale' => $locale, 
+															'fileName' => $fileName, 
+															'moduleName' => $moduleName,
+															'areas' => $file_data['areas'][$moduleName]
+														));
+						$data = array_merge($data, (array)$pairs);
+					}
 				}
 			}
 		}
@@ -85,6 +109,32 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 				'completed' => 0, 
 				'total' => count($data)
 		));
+	}
+	
+	public function getResources()
+	{
+		$files = $this->_getFilesList();
+	
+		$data = array();
+		$locales = $this->_getLocales();
+		$basedir = Mage::getBaseDir('locale');
+		foreach ($locales as $locale) {
+			if (file_exists(Mage::getBaseDir('locale') . DS . $locale)) {
+				foreach ($files as $file => $file_data) {
+					$fileName = $basedir . DS . $locale . DS . $file;
+					foreach ($file_data['modules'] as $moduleName) {
+						$data[] = serialize(array(
+												'locale' => $locale,
+												'fileName' => $fileName,
+												'moduleName' => $moduleName,
+												'areas' => $file_data['areas'][$moduleName],
+												'status' => false
+											));
+					}
+				}
+			}
+		}
+		return $data;
 	}
 	
 	public function pushThemeCsvsToQueue() {
@@ -151,37 +201,5 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 				'completed' => 0, 
 				'total' => count($data)
 		));
-	}
-	
-	public function getResources()
-	{
-		$files = array();
-		foreach (array('frontend', 'adminhtml', 'install') as $area) {
-			if (Mage::getConfig()->getNode($area . '/translate/modules')) {
-				$modules = Mage::getConfig()->getNode($area . '/translate/modules');
-				if ($modules->children()) {
-					$modules = $modules->children();
-					foreach ($modules as $moduleName => $info) {
-						$info = $info->asArray();
-						foreach ($info['files'] as $file) {
-							$files[$moduleName] = $file;
-						}
-					}
-				}
-			}
-		}
-	
-		$data = array();
-		$locales = $this->_getLocales();
-		$basedir = Mage::getBaseDir('locale');
-		foreach ($locales as $locale) {
-			if (file_exists(Mage::getBaseDir('locale') . DS . $locale)) {
-				foreach ($files as $moduleName => $file) {
-					$fileName = $basedir . DS . $locale . DS . $file;
-					$data[] = serialize(array('locale' => $locale, 'fileName' => $fileName, 'moduleName' => $moduleName, 'status' => false));
-				}
-			}
-		}
-		return $data;
 	}
 }

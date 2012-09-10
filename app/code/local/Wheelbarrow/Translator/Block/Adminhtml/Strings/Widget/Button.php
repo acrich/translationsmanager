@@ -9,7 +9,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Widget_Button extends Mage_
 				. '<label>'.Mage::helper('translator')->__('Path:').' </label>'
 				. '<input type="text" id="stringGrid_filter_path" name="path" class="input-text no-changes" value="'
 				. $this->getInputValue()
-				. '" style="width:330px;"></input></span>&nbsp;&nbsp;&nbsp;';
+				. '" style="width:180px;"></input></span>&nbsp;&nbsp;&nbsp;';
 	
 		return $html;
 	}

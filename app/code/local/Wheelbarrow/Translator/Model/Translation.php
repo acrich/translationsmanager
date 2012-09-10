@@ -48,59 +48,162 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		$this->_createItem($item);
 	}
 	
+	protected function _prepareDataForSave($item) {
+		$data = array(
+				'translation' => $item['translation'],
+				'string_id' => $item['string_id'],
+				'store_id' => $item['store_id'],
+				'locale' => $item['locale']
+		);
+		if (isset($item['translation_id']) && $item['translation_id']) {
+			$data['translation_id'] = $item['translation_id'];
+		}
+		if (isset($item['primary'])) {
+			$data['primary'] = $item['primary'];
+		}
+		if (isset($item['areas'])) {
+			if (array_key_exists('strict', $item) && $item['strict'] == true) {
+				foreach (array('frontend', 'adminhtml', 'install') as $area) {
+					$data[$area] = in_array($area, $item['areas']);
+				}
+			}
+			Mage::log('$data after preparation:');
+			Mage::log($data);
+			$this->removeDuplicateAreas($data);
+		}
+		return $data;
+	}
+	
 	protected function _createItem($item)
 	{
-		if ($translation_id = $this->getIdByParams($item['string_id'], $item['store_id'])) {
-			
-			if (array_key_exists('translation', $item) && $item['translation'] != '') {
-				$this->load($translation_id)->setData('translation', $item['translation'])->save();
-				return $translation_id;
+		if (array_key_exists('translation', $item) && $item['translation'] != '') {
+			if ($item['translation_id'] = $this->getIdByParams($item)) {
+				$translation = $this->load($item['translation_id'])->setData($this->_prepareDataForSave($item))->save()->getTranslationId();
 			} else {
-				$this->load($translation_id)->delete();
-				return false;
+				if ($this->getIdByParams(array('store_id' => $item['store_id'], 'string_id' => $item['string_id']))) {
+					$item['primary'] = false;
+				}
+				$item['translation_id'] = $this->setData($this->_prepareDataForSave($item))->save()->getTranslationId();
 			}
 		} else {
-			if (array_key_exists('translation', $item) && $item['translation'] != '') {
-				return $this->setData(array(
-							'translation' => $item['translation'],
-							'string_id' => $item['string_id'],
-							'store_id' => $item['store_id'],
-							'locale' => $item['locale']
-						))->save()->getTranslationId();
-			} else {
-				return false;
+			if ($item['translation_id'] = $this->getIdByParams($item)) {
+				$this->load($item['translation_id'])->delete();
+			}
+		}
+		return $item['translation_id'];
+	}
+	
+	public function removeDuplicateAreas($item) {
+		$siblings = $this->getCollection()
+			->addFieldToFilter('string_id', $item['string_id'])
+			->addFieldToFilter('store_id', $item['store_id']);
+		
+		if (isset($item['locale'])) {
+			$siblings->addFieldToFilter('locale', $item['locale']);
+		}
+
+		foreach ($siblings->load() as $sibling) {
+			if ($sibling->getTranslationId() != $item['translation_id']) {
+				$lives = 3;
+				Mage::log('sibling: '. $sibling->getTranslationId());
+				foreach (array('frontend', 'adminhtml', 'install') as $area) {
+					if (!$sibling->getData($area)) {	
+						Mage::log($area.' disabled.');
+						$lives--;
+					} else if ($item[$area]) {
+						Mage::log($area.' is enabled in $areas.');
+						$sibling->setData($area, false);
+						$lives--;
+					}
+				}
+				Mage::log($lives);
+				if ($lives == 0) {
+					$sibling->delete();
+				} else {
+					$sibling->save();
+				}
 			}
 		}
 	}
 	
-	public function getIdByParams($string_id, $store_id = null)
+	public function updateItem($item)
 	{
-		if (is_null($store_id)) {
-			$store_id = Mage_Core_Model_App::ADMIN_STORE_ID;
-		}
-		$items = $this->getCollection()
-			->addFieldToFilter('string_id', $string_id)
-			->addFieldToFilter('store_id', $store_id)
-			->load();
-	
-		$id = count($items) ? $items->getFirstItem()->getTranslationId() : false;
-	
-		return $id;
-	}
-	
-	public function deleteTranslation($string_id, $locale, $storeId)
-	{
-		$items = $this->getCollection()
-			->addFieldToFilter('string_id', $string_id)
-			->addFieldToFilter('store_id', $storeId);
-		if (!is_null($locale)) {
-			$items->addFieldToFilter('locale', $locale);
+		$this->load($item['translation_id']);
+		
+		if (isset($item['translation']) && $item['translation'] != '') {
+			$this->setTranslation($item['translation']);
 		}
 		
-		$items->load();
-		if (count($items)) {
-			$items->getFirstItem()->delete();
+		if (isset($item['areas'])) {
+			foreach (array('frontend', 'adminhtml', 'install') as $area) {
+				$this->setData($area, in_array($area, $item['areas']));
+			}
 		}
+		
+		$data = $this->save()->getData();
+		
+		if (isset($item['areas'])) {
+			$data['areas'] = $item['areas'];
+			$this->removeDuplicateAreas($data);
+		}
+		
+	}
+	
+	public function setItem($item)
+	{
+		if (isset($item['translation_id']) && $item['translation_id'] != 0) {
+			return $this->updateItem($item);
+		} else {
+			return $this->createItem($item);
+		}
+	}
+	
+	public function getIdByParams($item)
+	{
+		if (is_null($item['store_id'])) {
+			$item['store_id'] = Mage_Core_Model_App::ADMIN_STORE_ID;
+		}
+		
+		if (!is_array($item['store_id'])) {
+			$item['store_id'] = array($item['store_id']);
+		}
+		
+		$items = $this->getCollection()
+			->addFieldToFilter('string_id', $item['string_id'])
+			->addFieldToFilter('store_id', array('in'=>$item['store_id']));
+		
+		if (isset($item['areas'])) {
+			foreach (array('frontend', 'adminhtml', 'install') as $area) {
+				if (in_array($area, $item['areas'])) {
+					$items->addFieldToFilter($area, true);
+				}
+			}
+		}
+
+		return count($items->load()) ? $items->getFirstItem()->getTranslationId() : false;
+	}
+	
+	public function deleteTranslation($item)
+	{
+		if (!isset($item['translation_id'])) {
+			if (isset($item['string_id'])) {
+				$items = $this->getCollection()
+					->addFieldToFilter('string_id', $item['string_id']);
+				if (isset($item['store_id'])) {
+					$items->addFieldToFilter('store_id', $item['store_id']);
+				}
+				if (isset($item['locale'])) {
+					$items->addFieldToFilter('locale', $item['locale']);
+				}
+				if (isset($item['area'])) {
+					$items->addFieldToFilter($item['area'], true);
+				}
+				if (count($items->load()) === 1) {
+					$item['translation_id'] = $items->getFirstItem()->getTranslationId();
+				}
+			}
+		}
+		return $this->load($item['translation_id'])->delete();
 	}
 	
 	public function getTranslatedStringsByStore($store)
@@ -121,15 +224,28 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 			->load();
 	}
 	
-	public function updateItem($item)
+	public function getStringIdsByArea($area)
 	{
-		if (array_key_exists('translation_id', $item)) {
-			$this->load($item['translation_id']);
-			if (array_key_exists('translation', $item)) {
-				if ($this->getTranslation() != $item['translation']) {
-					$this->setTranslation($item['translation'])->save();
-				}
+		return $this->getCollection()
+			->addFieldToFilter($area, true)
+			->getColumnValues('string_id');
+	}
+	
+	public function getDuplicatesList($store_id)
+	{
+		$items = $this->getCollection()
+			->addFieldToFilter('store_id', $store_id)
+			->load();
+		$uniques = array();
+		$duplicates = array();
+		foreach ($items as $item) {
+			$string_id = $item->getStringId();
+			if (array_key_exists($string_id, $uniques)) {
+				$duplicates[$string_id] = $item->getTranslationId();
+			} else {
+				$uniques[$string_id] = $item->getTranslationId();
 			}
 		}
+		return implode(',',$duplicates);
 	}
 }

@@ -21,7 +21,7 @@ $installer->run("
 		`string` text,
 		`module` text,
 		`parameters` blob NULL,
-		`status` smallint(5) default 0,
+		`status` tinyint(1) NOT NULL default 1,
 		PRIMARY KEY  (`string_id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 	");
@@ -32,6 +32,10 @@ $installer->run("
 		`translation` text,
 		`locale` text,
 		`store_id` smallint(5) unsigned NOT NULL default 0,
+		`frontend` tinyint(1) NOT NULL default 1,
+		`adminhtml` tinyint(1) NOT NULL default 1,
+		`install` tinyint(1) NOT NULL default 1,
+		`primary` tinyint(1) NOT NULL default 1,
 		`string_id` int(11) NOT NULL,
 		PRIMARY KEY (`translation_id`),
 		INDEX (`string_id`),

@@ -33,27 +33,50 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 	public function editAction() {
 		$store_id = $this->_setStore();
 		
+		$area = '';
+		if ($this->getRequest()->getParam('area_switch')) {
+			$area = Mage::helper('translator')->setArea(strtolower($this->getRequest()->getParam('area')));
+		} else {
+			$area = Mage::helper('translator')->getArea();
+		}
+
 		$id     = $this->getRequest()->getParam('id');
 		$model  = Mage::getModel('translator/string')->load($id);
 		
 		if ($model->getId() || $id == 0) {
-			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
+			$data = Mage::getSingleton('adminhtml/session')->getTranslatorData(true);
 			if (!empty($data)) {
 				$model->setData($data);
 			}
 			
-			$translation_id = Mage::getModel('translator/translation')->getIdByParams($model->getId(), $store_id);
-			if ($translation_id) {
-				$translation = Mage::getModel('translator/translation')->load($translation_id)->getTranslation();	
-			} else {
-				$translation_id = 0;
-				$translation = '';
+			$params = array(
+				'string_id' => $model->getId(), 
+				'store_id' => $store_id
+			);
+			if ($area != '') {
+				$params['areas'] = array($area);
 			}
-			$model->setTranslationId($translation_id)
-					->setTranslation($translation);
+			
+			$translation_id = Mage::getModel('translator/translation')->getIdByParams($params);
+			Mage::log($translation_id);
+			if ($translation_id) {
+				$item = Mage::getModel('translator/translation')->load($translation_id);
+				Mage::log($item->getData());
+				$model->setTranslationId($translation_id)
+				->setTranslation($item->getTranslation())
+				->setFrontend($item->getFrontend())
+				->setAdminhtml($item->getAdminhtml())
+				->setInstall($item->getInstall());
+			} else {
+				$model->setTranslationId(0)
+				->setTranslation('');
+				foreach (array('frontend', 'adminhtml', 'install') as $option) {
+					$model->setData($option, ($option == $area));
+				}
+			}
 			
 			Mage::register('translator_data', $model);
-
+			Mage::log(Mage::registry('translator_data')->getData());
 			$this->loadLayout();
 			$this->_setActiveMenu('translator/manage');
 
@@ -65,6 +88,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 			
 			$this->_addContent($this->getLayout()->createBlock('translator/adminhtml_strings_edit'))
 				->_addLeft($this->getLayout()->createBlock('translator/adminhtml_store_switcher'))
+				->_addLeft($this->getLayout()->createBlock('translator/adminhtml_area_switcher'))
 				->_addLeft($this->getLayout()->createBlock('translator/adminhtml_strings_edit_tabs'));
 
 			$this->renderLayout();
@@ -115,10 +139,19 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 				}
 				
 				$data['store_id'] = Mage::helper('translator')->getCurrentStore();
+
+				$data['areas'] = array();
+				foreach (array('frontend', 'adminhtml', 'install') as $area) {
+					if (!empty($data[$area])) {
+						$data['areas'][] = $area;
+					}
+				}
+				$data['strict'] = true;
+
 				$string_id = Mage::getModel('translator/translate')->addEntry($data);
 
 				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('translator')->__('Item was successfully saved'));
-				Mage::getSingleton('adminhtml/session')->setFormData(false);
+				Mage::getSingleton('adminhtml/session')->setTranslatorData(false);
 
 				if ($this->getRequest()->getParam('back')) {
 					$this->_redirect('*/*/edit', array('id' => $string_id));
@@ -128,7 +161,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 				return;
             } catch (Exception $e) {
                 Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
-                Mage::getSingleton('adminhtml/session')->setFormData($data);
+                Mage::getSingleton('adminhtml/session')->setTranslatorData($data);
                 $this->_redirect('*/*/edit', array('id' => $this->getRequest()->getParam('id')));
                 return;
             }

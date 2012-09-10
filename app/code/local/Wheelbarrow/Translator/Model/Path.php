@@ -12,6 +12,15 @@ class Wheelbarrow_Translator_Model_Path extends Mage_Core_Model_Abstract
 		return preg_replace("/http(s?)\:\/\//", '//', $path);
 	}
 	
+	protected function _saveItem($item) {
+		$this->setPath($item['path'])
+			->setStringId($item['string_id'])
+			->setData('file', $item['file'])
+			->setData('offset', $item['offset'])
+			->save();
+		return $this->getPathId();
+	}
+	
 	public function createItem($item)
 	{
 		$item['path'] = $this->_preparePathForDb($item['path']);
@@ -41,23 +50,11 @@ class Wheelbarrow_Translator_Model_Path extends Mage_Core_Model_Abstract
 							continue;
 						}
 					}
-					//@todo use setData($item) and get it over with.
 					if (!$match) {
-						$this->setPath($item['path'])
-							->setStringId($item['string_id'])
-							->setData('file', $item['file'])
-							->setData('offset', $item['offset'])
-							->save();
-						$path_id = $this->getPathId();
+						$path_id = $this->_saveItem($item);
 					}
-					//@todo use setData($item) and get it over with.
 				} else {
-					$this->setPath($item['path'])
-						->setStringId($item['string_id'])
-						->setData('file', $item['file'])
-						->setData('offset', $item['offset'])
-						->save();
-					$path_id = $this->getPathId();
+					$path_id = $this->_saveItem($item);
 				}
 			}
 		} else {

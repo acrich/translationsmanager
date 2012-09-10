@@ -63,7 +63,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
      */
     protected function _loadDbTranslation($forceReload = false)
     {
-    	$arr = $this->getResource()->getTranslationArrayByModule($this->getLocale());
+    	$arr = $this->getResource()->getTranslationArrayByModule($this->getLocale(), parent::CONFIG_KEY_AREA);
     	foreach ($arr as $scope => $pairs) {
     		$this->_addData($pairs, $scope, $forceReload);
     	}
@@ -178,12 +178,10 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     
     public function addEntry($item)
     {
-    	if (!isset($item['string_id'])) {
-    		$item['string_id'] = Mage::getModel('translator/string')->createItem($item);
-    	} else {
-    		$item['string_id'] = Mage::getModel('translator/string')->updateItem($item);
-    	}
-    	Mage::getModel('translator/translation')->createItem($item);
+    	$item['string_id'] = Mage::getModel('translator/string')->setItem($item);
+    	
+    	Mage::getModel('translator/translation')->setItem($item);
+    	
     	return $item['string_id'];
     }
     
@@ -193,7 +191,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     	$translation_col = Mage::getModel('translator/translation')->getCollection()->load();
     	foreach ($batch as $key => $item) {
     		$item['string_id'] = Mage::getModel('translator/string')->prepareForSave($string_col, $item);
-    		Mage::getModel('translator/translation')->createItem($item);
+    		Mage::getModel('translator/translation')->setItem($item);
     	}
     }
     
@@ -208,6 +206,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     	$translation_model = Mage::getModel('translator/translation');
     	$items = $translation_model->getCollection()
     		->addFieldToFilter('string_id', $string_id)
+    		->addFieldToFilter(parent::CONFIG_KEY_AREA, true)
     		->load();
     	$result = array();
     	foreach ($items as $item) {

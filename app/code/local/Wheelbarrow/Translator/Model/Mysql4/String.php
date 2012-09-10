@@ -71,7 +71,7 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 		return $this->_preparePairs($collection);
 	}
 	
-	public function getTranslationArrayByModule($locale = null)
+	public function getTranslationArrayByModule($locale, $area)
 	{
 		if (!Mage::isInstalled()) {
 			return array();
@@ -92,20 +92,22 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 		$results = array();
 		foreach ($collection as $item)
 		{
-			$string_item = Mage::getModel('translator/string')->load($item['string_id']);
-			if ($string_item->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
-				$module = $string_item->getModule();
-				if (is_null($module) || $module == '') {
-					$scope = $storeId;
-					$string = $string_item->getString();
-				} else {
-					$scope = $module;
-					$string = $module . Mage_Core_Model_Translate::SCOPE_SEPARATOR . $string_item->getString();
+			if ($item->getData($area)) {
+				$string_item = Mage::getModel('translator/string')->load($item['string_id']);
+				if ($string_item->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
+					$module = $string_item->getModule();
+					if (is_null($module) || $module == '') {
+						$scope = $storeId;
+						$string = $string_item->getString();
+					} else {
+						$scope = $module;
+						$string = $module . Mage_Core_Model_Translate::SCOPE_SEPARATOR . $string_item->getString();
+					}
+					if (!array_key_exists($scope, $results)) {
+						$results[$scope] = array();
+					}
+					$results[$scope][$string] = $item['translation'];
 				}
-				if (!array_key_exists($scope, $results)) {
-					$results[$scope] = array();
-				}
-				$results[$scope][$string] = $item['translation'];
 			}
 		}
 	
@@ -152,6 +154,7 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 		} elseif (array_key_exists('module', $item)) {
 			$select->where('module IS NULL');
 		}
+		
 		return $adapter->fetchOne($select);
 	}
 	

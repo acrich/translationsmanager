@@ -40,6 +40,16 @@ class Wheelbarrow_Translator_Block_Adminhtml_Sources_Grid extends Mage_Adminhtml
 	  		'renderer' => 'Wheelbarrow_Translator_Block_Adminhtml_Sources_Renderer_Locale',
 	  ));
 	  
+	  $this->addColumn('areas', array(
+	  		'header'    => Mage::helper('translator')->__('Areas'),
+	  		'align'     =>'left',
+	  		'width'     => '100px',
+	  		'index'     => 'register',
+	  		'sortable'  => false,
+	  		'filter'	=> false,
+	  		'renderer' => 'Wheelbarrow_Translator_Block_Adminhtml_Sources_Renderer_Area',
+	  ));
+	  
 	  $this->addColumn('status', array(
 	  		'header'    => Mage::helper('translator')->__('Status'),
 	  		'align'     =>'left',
