@@ -63,11 +63,10 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
      */
     protected function _loadDbTranslation($forceReload = false)
     {
-    	$arr = $this->getResource()->getTranslationArrayByModule($this->getLocale(), parent::CONFIG_KEY_AREA);
+    	$arr = $this->getResource()->getTranslationArrayByModule($this->getLocale(), $this->getConfig(parent::CONFIG_KEY_AREA));
     	foreach ($arr as $scope => $pairs) {
     		$this->_addData($pairs, $scope, $forceReload);
     	}
-    	
     	return $this;
     }
     
@@ -81,9 +80,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     {
     	$text = array_shift($args);
 
-    	$param = Mage::getModel('translator/observer');
-    	$param = $param::FLAG_SHOW_LAYOUT;
-    	
+    	$param = Mage::getModel('translator/observer')->getObserverFlag();
     	if (array_key_exists($param, $_GET))
 		{
 	    	if (!(is_string($text) && ''==$text)
@@ -127,21 +124,27 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 		if ($string->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
 			$params = unserialize($string->getParameters());
 			if (is_array($params)) {
-				$callback = function($matches) {
-					$var = Mage::getModel('core/variable');
-					$var->setStoreId(Mage::app()->getStore()->getId());
-					return $var->loadByCode($matches[1])->getValue('html');
-				};
+				Mage::getModel('core/variable')->setStoreId(Mage::app()->getStore()->getId());
 				foreach ($params as $key => $param) {
 					if ($param['hardcoded']) {
 						if (isset($args[$param['code_position']])) {
 							$args2[$param['position']] = $args[$param['code_position']];
 						}
 					} else {
-						$param['value'] = preg_replace_callback("/{{customVar code=(.*)}}/U", $callback, $param['value']);
+						$splits = explode('{{customVar ', $param['value']);
+						$param['value'] = '';
+						foreach ($splits as $split) {
+							preg_match("/code=(.*)}}/U", $split, $matches);
+							if (count($matches)) {
+								$string = Mage::getModel('core/variable')->loadByCode($matches[1])->getValue('html');
+								$split = preg_replace("/code=(.*)}}/U", $string, $split);
+							}
+							$param['value'] .= $split;
+						}
 						$args2[$param['position']] = $param['value'];
 					}
 				}
+				ksort($args2);
 			}
 		}
 		array_unshift($args2, $text);
@@ -206,7 +209,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     	$translation_model = Mage::getModel('translator/translation');
     	$items = $translation_model->getCollection()
     		->addFieldToFilter('string_id', $string_id)
-    		->addFieldToFilter(parent::CONFIG_KEY_AREA, true)
+    		->addFieldToFilter($this->getConfig(parent::CONFIG_KEY_AREA), true)
     		->load();
     	$result = array();
     	foreach ($items as $item) {

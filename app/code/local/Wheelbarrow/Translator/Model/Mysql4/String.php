@@ -76,7 +76,6 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 		if (!Mage::isInstalled()) {
 			return array();
 		}
-		
 		$storeId = Mage::app()->getStore()->getId();
 		
 		$collection = Mage::getModel('translator/translation')
@@ -110,7 +109,7 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 				}
 			}
 		}
-	
+		
 		return $results;
 	}
 	

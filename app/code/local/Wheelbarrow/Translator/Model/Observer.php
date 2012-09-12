@@ -3,6 +3,11 @@ class Wheelbarrow_Translator_Model_Observer
 {
 	const FLAG_SHOW_LAYOUT 			= 'translateScan';
 	
+	public function getObserverFlag()
+	{
+		return self::FLAG_SHOW_LAYOUT;
+	}
+	
 	public function getBlockTemplate($observer)
 	{
 		if (array_key_exists(self::FLAG_SHOW_LAYOUT, $_GET))

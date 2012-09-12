@@ -154,7 +154,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		        if (empty($params['_theme'])) {
 		        	$params['_theme'] = $package->getFallbackTheme();
 		        	if (empty($params['_theme'])) {
-		        		$params['_theme'] = $package::DEFAULT_THEME;
+		        		$params['_theme'] = $package->getDefaultTheme();
 		        	}
 		        }
 
@@ -164,7 +164,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		    	$file = $dir . DS . 'translate.csv';
 		    	
 		    	if (!file_exists($file)) {
-		    		$params['_theme']   = $package::DEFAULT_THEME;
+		    		$params['_theme']   = $package->getDefaultTheme();
 
 		    		$dir = Mage::getBaseDir('design').DS.
 		    		$params['_area'].DS.$params['_package'].DS.$params['_theme'] . DS . 'locale' . DS .
@@ -174,9 +174,9 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		    		
 		    		if (!file_exists($file)) {
 		    			if ($area == 'frontend') {
-		    				$params['_package'] = $package::BASE_PACKAGE;
+		    				$params['_package'] = 'base';
 		    			} else {
-		    				$params['_package'] = $package::DEFAULT_PACKAGE;
+		    				$params['_package'] = 'default';
 		    			}
 
 		    			$dir = Mage::getBaseDir('design').DS.

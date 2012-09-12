@@ -67,8 +67,6 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 					$data[$area] = in_array($area, $item['areas']);
 				}
 			}
-			Mage::log('$data after preparation:');
-			Mage::log($data);
 			$this->removeDuplicateAreas($data);
 		}
 		return $data;
@@ -103,25 +101,22 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		}
 
 		foreach ($siblings->load() as $sibling) {
-			if ($sibling->getTranslationId() != $item['translation_id']) {
-				$lives = 3;
-				Mage::log('sibling: '. $sibling->getTranslationId());
-				foreach (array('frontend', 'adminhtml', 'install') as $area) {
-					if (!$sibling->getData($area)) {	
-						Mage::log($area.' disabled.');
-						$lives--;
-					} else if ($item[$area]) {
-						Mage::log($area.' is enabled in $areas.');
-						$sibling->setData($area, false);
-						$lives--;
-					}
+			if (isset($item['translation_id']) && $sibling->getTranslationId() == $item['translation_id']) {
+				continue;
+			}
+			$lives = 3;
+			foreach (array('frontend', 'adminhtml', 'install') as $area) {
+				if (!$sibling->getData($area)) {	
+					$lives--;
+				} else if ($item[$area]) {
+					$sibling->setData($area, false);
+					$lives--;
 				}
-				Mage::log($lives);
-				if ($lives == 0) {
-					$sibling->delete();
-				} else {
-					$sibling->save();
-				}
+			}
+			if ($lives == 0) {
+				$sibling->delete();
+			} else {
+				$sibling->save();
 			}
 		}
 	}

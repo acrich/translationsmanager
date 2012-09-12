@@ -29,15 +29,6 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       	if (is_null($filter)) {
       		$filter = $this->_defaultFilter;
       		
-      		/**
-      		 * the path filter is without a join right now.
-      		 * same for the area filter when the filter is on.
-      		 * refactor the join statement, so you won't have it 4 times
-      		 * 
-      		 * in the end, remove the primary field.
-      		 * 
-      		*/
-      		
       		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
       		$where = 'main_table.string_id = translator_translation.string_id'
 	      				.' AND translator_translation.store_id = '.$store_id;
@@ -45,7 +36,6 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       		$this->getCollection()
 	      		->getSelect()
 	      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
-      		Mage::log((String)$this->getCollection()->getSelect());
       		Mage::helper('translator')->setArea('');
       	}
       
@@ -59,26 +49,30 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       		}
       		
       		if (array_key_exists('area', $data)) {
-      			Mage::helper('translator')->setArea(strtolower($data['area']));
+      			$area = strtolower($data['area']);
       		} else {
-      			Mage::helper('translator')->setArea('');
+      			$area = '';
       		}
-      		
-      		if (Mage::helper('translator')->getArea() == '') {
-			
-      		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
-      		$where = 'main_table.string_id = translator_translation.string_id'
-	      				.' AND translator_translation.store_id = '.$store_id;
-      		$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
-      		$this->getCollection()
-	      		->getSelect()
-	      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
-      		Mage::log((String)$this->getCollection()->getSelect());
-      		Mage::helper('translator')->setArea('');
-      		
+
+      		if ($area == '') {
+	      		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
+	      		$where = 'main_table.string_id = translator_translation.string_id'
+		      				.' AND translator_translation.store_id = '.$store_id;
+	      		$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
+	      		$this->getCollection()
+		      		->getSelect()
+		      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
+	      		
       		} else {
-      			$this->getCollection()->addFieldToFilter('translator_translation.'.Mage::helper('translator')->getArea() , array('eq'=>1));
+      			$this->getCollection()
+      				->getSelect()
+      				->joinLeft(	'translator_translation',
+      							'main_table.string_id = translator_translation.string_id'
+      								.' AND translator_translation.store_id = '.$store_id
+      								.' AND translator_translation.'.$area.'=1',
+      							array('translation', 'translation_id'));
       		}
+      		Mage::helper('translator')->setArea($area);
       		
       		$this->_setFilterValues($data);
       	}

@@ -58,10 +58,8 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 			}
 			
 			$translation_id = Mage::getModel('translator/translation')->getIdByParams($params);
-			Mage::log($translation_id);
 			if ($translation_id) {
 				$item = Mage::getModel('translator/translation')->load($translation_id);
-				Mage::log($item->getData());
 				$model->setTranslationId($translation_id)
 				->setTranslation($item->getTranslation())
 				->setFrontend($item->getFrontend())
@@ -70,13 +68,19 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 			} else {
 				$model->setTranslationId(0)
 				->setTranslation('');
-				foreach (array('frontend', 'adminhtml', 'install') as $option) {
-					$model->setData($option, ($option == $area));
+				if ($area != '') {
+					foreach (array('frontend', 'adminhtml', 'install') as $option) {
+						$model->setData($option, ($option == $area));
+					}
+				} else {
+					foreach (array('frontend', 'adminhtml', 'install') as $option) {
+						$model->setData($option, true);
+					}
 				}
 			}
 			
 			Mage::register('translator_data', $model);
-			Mage::log(Mage::registry('translator_data')->getData());
+			
 			$this->loadLayout();
 			$this->_setActiveMenu('translator/manage');
 
@@ -317,7 +321,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     		case 'importCsvFiles':
     			
     			$sync = Mage::helper('translator/sync');
-    			$sync->init($sync::CSV_SCAN_ACTION);
+    			$sync->init($sync->getAction('CSV_SCAN_ACTION'));
     			Mage::helper('translator/importer')->pushCsvFilesToQueue();
     			$messages->setText('<div id="sync-messages"></div>');
     			
@@ -334,7 +338,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     		case 'importThemeCsvs':
     			
     			$sync = Mage::helper('translator/sync');
-    			$sync->init($sync::THEME_SCAN_ACTION);
+    			$sync->init($sync->getAction('THEME_SCAN_ACTION'));
     			Mage::helper('translator/importer')->pushThemeCsvsToQueue();
     			 
     			$messages->setText('<div id="sync-messages"></div>');
@@ -385,7 +389,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     	}
     	
     	$sync = Mage::helper('translator/sync');
-    	$sync->init($sync::CSV_SCAN_ACTION);
+    	$sync->init($sync->getAction('CSV_SCAN_ACTION'));
     	Mage::helper('translator/sync')->setRegisterData(array(
     			'completed' => 0,
     			'total' => count($pairs)
@@ -433,7 +437,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     	$data = $this->getRequest()->getPost();
     
     	$sync = Mage::helper('translator/sync');
-    	$sync->init($sync::PATH_SCAN_ACTION, array(
+    	$sync->init($sync->getAction('PATH_SCAN_ACTION'), array(
     			'go_to_url' => true,
     			'path' => $data['path'],
     			'message' => ''
