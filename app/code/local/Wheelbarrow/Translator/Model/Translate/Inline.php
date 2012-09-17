@@ -12,7 +12,7 @@ class Wheelbarrow_Translator_Model_Translate_Inline extends Mage_Core_Model_Tran
         if (!$this->isAllowed()) {
             return $this;
         }
-Mage::log($translate);
+
         $resource = Mage::getResourceModel('translator/translate_string');
         foreach ($translate as $t) {
             if (Mage::getDesign()->getArea() == 'adminhtml') {

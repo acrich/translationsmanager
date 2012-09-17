@@ -20,6 +20,6 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Widget_Area_Button extends 
 	
 	public function isSelected($option)
 	{
-		return (strtolower($option) == Mage::helper('translator')->getArea()) ? 'selected' : '';
+		return (strtolower($option) == Mage::helper('translator')->getStoredSession('area')) ? 'selected' : '';
 	}
 }

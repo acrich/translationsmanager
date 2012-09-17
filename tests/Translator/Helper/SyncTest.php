@@ -106,7 +106,7 @@ class Wheelbarrow_Translator_Helper_Sync_Test extends PHPUnit_Framework_TestCase
 	 * @depends testSyncRegister
 	 */
 	public function testIterator($register)
-	{
+	{		
 		//Test with no sync cache item in store.
 		$output = $this->syncHelper->iterator();
 		$this->assertEquals(false, $output['state']);
@@ -119,7 +119,7 @@ class Wheelbarrow_Translator_Helper_Sync_Test extends PHPUnit_Framework_TestCase
 					    			'completed' => 0,
 					    			'total' => 1
 		    			));
-		$this->syncHelper->setRegister($register);
+		$actual = $this->syncHelper->init($register['action'], $register['data']);
 		
 		$output = $this->syncHelper->iterator();
 		$this->assertEquals(false, $output['state']);
@@ -137,6 +137,7 @@ class Wheelbarrow_Translator_Helper_Sync_Test extends PHPUnit_Framework_TestCase
 		$this->syncHelper->setRegister($register);
 		
 		$output = $this->syncHelper->iterator();
+		
 		$this->assertEquals(true, $output['state']);
 		$this->assertEquals('processed 1 entries out of 1 total.', $output['data']);
 		
@@ -202,5 +203,7 @@ class Wheelbarrow_Translator_Helper_Sync_Test extends PHPUnit_Framework_TestCase
 			->addFieldToFilter('name', 'sync')
 			->getLastItem()
 			->delete();
+		
+		//@todo remove the string and translation items we created before.
 	}
 }

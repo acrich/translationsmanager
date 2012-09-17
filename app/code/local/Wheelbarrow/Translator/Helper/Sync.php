@@ -79,6 +79,8 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 	 * @param mixed $data
 	 * 
 	 * @return Wheelbarrow_Translator_Helper_Sync
+	 * 
+	 * @todo make sure it doesn't save to an empty item.
 	 */
 	public function setRegister($data) {
 		
@@ -160,7 +162,7 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 		//Set the $output array with the 
 		$output = array();
 		
-		//@todo move this into the last case of the switch.
+		//@todo move this into the last case of the switch, and decide on a default output state.
 		$output['state'] = $register['state'];
 
 		switch ($register['action']) {

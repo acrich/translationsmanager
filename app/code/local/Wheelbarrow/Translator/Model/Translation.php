@@ -9,9 +9,19 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		$this->_init('translator/translation');
 	}
 	
+	//@todo make all the createItem derivatives return some value.
+	
+	/**
+	 * Creates a new translation item and saves it.
+	 * 
+	 * @param Array $item
+	 */
 	public function createItem($item)
 	{
+		//If there's no string_id attribute, do nothing.
+		//Switch the if into a if !, and remove the need for an else clause.
 		if (array_key_exists('string_id', $item)) {
+			//If there isn't a store_id but there is a locale, create an item for each store with that locale.
 			if (!array_key_exists('store_id', $item) || $item['store_id'] == Mage_Core_Model_App::ADMIN_STORE_ID) {
 				$default_locale = Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID)->getConfig('general/locale/code');
 				if (array_key_exists('locale', $item) && !($item['locale'] == $default_locale)) {
@@ -24,13 +34,16 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 							$this->_createItem($item);
 						}
 					}
+					//If you haven't found any stores with that locale, create an item with defaults.
 					if (!$found) {
 						$this->_createDefaultItem($item);
 					}
+				//If there isn't a store_id or a locale, create an item with defaults.
 				} else {
 					$this->_createDefaultItem($item);
 				}
 			} else {
+				//If there's a store id, but no locale, fill the one based on the other.
 				if (!array_key_exists('locale', $item)) {
 					$item['locale'] = Mage::app()->getStore($item['store_id'])->getConfig('general/locale/code');
 				}
@@ -58,6 +71,7 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		if (isset($item['translation_id']) && $item['translation_id']) {
 			$data['translation_id'] = $item['translation_id'];
 		}
+		//@todo remove primary here and anywhere else it still lingers.
 		if (isset($item['primary'])) {
 			$data['primary'] = $item['primary'];
 		}
@@ -67,6 +81,9 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 					$data[$area] = in_array($area, $item['areas']);
 				}
 			}
+			//@todo if it's not set to strict then no data[$area] are set, only the general $data['areas'],
+			//	in which case remove duplicates won't work right. I bypassed it with an if statement,
+			//	but this isn't the right way to do it.
 			$this->removeDuplicateAreas($data);
 		}
 		return $data;
@@ -75,15 +92,28 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 	protected function _createItem($item)
 	{
 		if (array_key_exists('translation', $item) && $item['translation'] != '') {
+			//@todo this runs over existing values and prevents updating where appropriate.
+			// Change it, and change the unit test accordingly.
 			if ($item['translation_id'] = $this->getIdByParams($item)) {
+				//@todo this variable isn't used, you probably meant to insert that into $item['translation_id']
 				$translation = $this->load($item['translation_id'])->setData($this->_prepareDataForSave($item))->save()->getTranslationId();
 			} else {
 				if ($this->getIdByParams(array('store_id' => $item['store_id'], 'string_id' => $item['string_id']))) {
 					$item['primary'] = false;
 				}
-				$item['translation_id'] = $this->setData($this->_prepareDataForSave($item))->save()->getTranslationId();
+				//@todo check whether or not we need to add this part somewhere else too:
+				//Setting the areas only when it's not an update:
+				$data = $this->_prepareDataForSave($item);
+				if (isset($item['areas'])) {
+					foreach (array('frontend', 'adminhtml', 'install') as $area) {
+						$data[$area] = in_array($area, $item['areas']);
+					}
+				}
+
+				$item['translation_id'] = $this->setData($data)->save()->getTranslationId();
 			}
 		} else {
+			//@todo add a test for this scenario (existing item, and an update with translation set to nothing).
 			if ($item['translation_id'] = $this->getIdByParams($item)) {
 				$this->load($item['translation_id'])->delete();
 			}
@@ -108,7 +138,7 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 			foreach (array('frontend', 'adminhtml', 'install') as $area) {
 				if (!$sibling->getData($area)) {	
 					$lives--;
-				} else if ($item[$area]) {
+				} else if (isset($item[$area]) && $item[$area]) {
 					$sibling->setData($area, false);
 					$lives--;
 				}
@@ -121,6 +151,7 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		}
 	}
 	
+	//@todo either merge this into createItem or merge parts of the latter into this one.
 	public function updateItem($item)
 	{
 		$this->load($item['translation_id']);

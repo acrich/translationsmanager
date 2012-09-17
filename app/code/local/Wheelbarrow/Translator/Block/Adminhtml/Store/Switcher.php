@@ -3,7 +3,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Store_Switcher extends Mage_Adminht
 {
 	public function getStoreId()
 	{
-		return Mage::helper('translator')->getCurrentStore();
+		return Mage::helper('translator')->getStoredSession('store');
 	}
 	
 	public function getSwitchUrl()

@@ -233,7 +233,7 @@
             <modules>
                 <Mage_Tax>
                     <files>
-                        <default>Mage_Tax.csv</default>
+                        <default>Mage_Sales.csv</default>
                     </files>
                 </Mage_Tax>
             </modules>

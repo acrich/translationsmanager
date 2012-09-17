@@ -4,9 +4,9 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 {	
 	protected function _setStore() {
 		if ($this->getRequest()->getParam('switch')) {
-			$store_id = Mage::helper('translator')->setCurrentStore($this->getRequest()->getParam('store'));
+			$store_id = Mage::helper('translator')->setStoredSession('store', $this->getRequest()->getParam('store'));
 		} else {
-			$store_id = Mage::helper('translator')->getCurrentStore();
+			$store_id = Mage::helper('translator')->getStoredSession('store');
 		}
 		return $store_id;
 	}

@@ -13,7 +13,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
 
   protected function _prepareCollection()
   {
-	  $store_id = Mage::helper('translator')->getCurrentStore();
+	  $store_id = Mage::helper('translator')->getStoredSession('store');
       $collection = Mage::getModel('translator/string')->getCollection();
 
       $this->setCollection($collection);
@@ -28,7 +28,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       
       	if (is_null($filter)) {
       		$filter = $this->_defaultFilter;
-      		
+      		//@todo move all db-related code out of the block.
       		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
       		$where = 'main_table.string_id = translator_translation.string_id'
 	      				.' AND translator_translation.store_id = '.$store_id;
@@ -36,7 +36,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       		$this->getCollection()
 	      		->getSelect()
 	      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
-      		Mage::helper('translator')->setArea('');
+      		Mage::helper('translator')->setStoredSession('area', '');
       	}
       
       	if (is_string($filter)) {
@@ -72,7 +72,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       								.' AND translator_translation.'.$area.'=1',
       							array('translation', 'translation_id'));
       		}
-      		Mage::helper('translator')->setArea($area);
+      		Mage::helper('translator')->setStoredSession('area', $area);
       		
       		$this->_setFilterValues($data);
       	}
