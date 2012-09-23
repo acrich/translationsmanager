@@ -43,6 +43,21 @@ class Wheelbarrow_Translator_Model_Mysql4_String_Collection extends Mage_Core_Mo
 		return $this;
 	}
 	
+	public function addAreaFilter($area)
+	{
+		//@todo move out of here and into the model itself.
+		$string_ids = array();
+		$items = Mage::getModel('translator/translation')->getCollection()
+			->addFieldToFilter($area, 1);
+		foreach ($items as $item) {
+			$string_ids[] = $item->getStringId();
+		}
+
+		$this->addFilter('main_table.string_id', array('in' => $string_ids), 'public');
+
+		return $this;
+	}
+	
 	/**
 	 * Perform operations after collection load
 	 *

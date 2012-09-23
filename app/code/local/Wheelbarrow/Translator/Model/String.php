@@ -10,6 +10,7 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 	
 	public function createItem($item)
 	{
+		//@todo add a check for an empty or non-existing string attribute + a test.
 		$string_id = $this->getResource()->getIdByParams($item);
 		if (!$string_id) {
 			$data = array();
@@ -64,6 +65,7 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 		if ($string_id && $string_id != $item['string_id']) {
 			$this->load($item['string_id'])->delete();
 			$data['string_id'] = $string_id;
+			//@todo get this out of the if statement:
 			$this->load($data['string_id'])->setData($data)->save();
 		} else {
 			$data['string_id'] = $item['string_id'];
@@ -72,6 +74,7 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 		return $data['string_id'];
 	}
 	
+	//@todo change this function's name, if it should even exist.
 	public function prepareForSave($collection, $item) {
 		
 		if (!array_key_exists('module', $item)) {

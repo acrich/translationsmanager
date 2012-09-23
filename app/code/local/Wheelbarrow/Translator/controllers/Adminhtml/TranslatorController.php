@@ -12,14 +12,19 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 	}
  
 	public function indexAction() {
-
+		
 		$this->loadLayout()
 			->_setActiveMenu('translator/manage')
 			->_addBreadcrumb(Mage::helper('translator')->__('Translations Manager'), Mage::helper('translator')->__('translations Manager'));
-
+		
 		$this->_setStore();
+		
+		if ($this->getRequest()->getParam('area_switch')) {
+			Mage::helper('translator')->setStoredSession('area', strtolower($this->getRequest()->getParam('area')));
+		}
 
 		$this->_addContent($this->getLayout()->createBlock('translator/adminhtml_store_switcher'))
+			->_addContent($this->getLayout()->createBlock('translator/adminhtml_area_switcher'))
 			->_addContent($this->getLayout()->createBlock('translator/adminhtml_strings'));
 		
 		$this->renderLayout();
@@ -32,12 +37,12 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 
 	public function editAction() {
 		$store_id = $this->_setStore();
-		
+
 		$area = '';
 		if ($this->getRequest()->getParam('area_switch')) {
-			$area = Mage::helper('translator')->setArea(strtolower($this->getRequest()->getParam('area')));
+			$area = Mage::helper('translator')->setStoredSession('area', strtolower($this->getRequest()->getParam('area')));
 		} else {
-			$area = Mage::helper('translator')->getArea();
+			$area = Mage::helper('translator')->getStoredSession('area');
 		}
 
 		$id     = $this->getRequest()->getParam('id');

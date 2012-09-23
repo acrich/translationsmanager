@@ -4,7 +4,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Edit_Tab_Form extends Mage_
 {
   protected function _prepareForm()
   {
-      $form = new Varien_Data_Form();
+  	  $form = new Varien_Data_Form();
       $this->setForm($form);
       $fieldset = $form->addFieldset('string_form', array('legend'=>Mage::helper('translator')->__('Item information')));
      

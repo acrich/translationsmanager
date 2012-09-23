@@ -8,7 +8,7 @@ class Wheelbarrow_Translator_Block_Adminhtml_Area_Switcher extends Mage_Adminhtm
     
     public function isSelected($option)
     {
-    	return (strtolower($option) == Mage::helper('translator')->getArea()) ? 'selected="selected"' : '';
+    	return (strtolower($option) == Mage::helper('translator')->getStoredSession('area')) ? 'selected="selected"' : '';
     }
     
     public function getOptions()

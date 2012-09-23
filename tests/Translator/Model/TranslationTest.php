@@ -8,6 +8,11 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 	{
 		Mage::app('default');
 		$this->translation = Mage::getModel('translator/translation');
+		
+		$this->string_id = Mage::getModel('translator/string')->createItem(array(
+															'string' => 'test', 
+															'module' => 'Wheelbarrow_Test'
+														));
 	}
 
 	public function testCreateItem()
@@ -24,7 +29,7 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 				'store_id' => $french_store,
 				'locale' => 'fr_FR',
 				'areas' => array('frontend', 'adminhtml'),
-				'string_id' => 1
+				'string_id' => $this->string_id
 		);
 		
 		//Test without a string id
@@ -36,7 +41,7 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		$this->assertNull($id);
 		
 		//Resetting stuff:
-		$expected['string_id'] = 1;
+		$expected['string_id'] = $this->string_id;
 
 		//Test different combinations of store_id and locale:
 		// - STORE_ID=TRUE, LOCALE=TRUE
@@ -306,6 +311,10 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		//Make sure there aren't any extra items:
 		$this->assertEquals(0, count($this->translation->getCollection()->load()));
 		
+		//@todo make sure we're always calling setItem instead of the other two, so we'll be able to check just
+		// setItem and updateItem with translation_id and none of the ones below. P.S. why should it ignore the
+		// translation_id in case of major differences?
+		
 		//Translation id combinations:
 		// - With a translation id that equals zero
 		$expected['translation_id'] = 0;
@@ -348,7 +357,7 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		$this->translation->createItem($expected);
 		
 		$expected['translation_id'] = $this->translation->getCollection()->getLastItem()->getTranslationId();
-		$expected['string_id'] = 1;
+		$expected['string_id'] = $this->string_id;
 		
 		$this->translation->createItem($expected);
 		$actual = $this->translation->getCollection()->getLastItem();
@@ -447,7 +456,7 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		//Test the temporary value:
 		$this->assertEquals($expected['string_id'], $this->translation->getCollection()->getLastItem()->getStringId());
 		
-		$expected['string_id'] = 1;
+		$expected['string_id'] = $this->string_id;
 		$this->translation->createItem($expected);
 		$actual = $this->translation->getCollection()->getLastItem();
 		
@@ -654,12 +663,479 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		//Make sure there aren't any extra items:
 		$this->assertEquals(0, count($this->translation->getCollection()->load()));
 		
-		//@todo test removeDuplicateAreas():
-		// Existing item with frontend, existing item with adminhtml. Now we're resaving the second
-		// with frontend too. It should remove the one with adminhtml. 
-		// Same test only the second has install too. This time it removes adminhtml from it, without
-		// deleting it.
+		//removeDuplicateAreas() Triggers:
+		// - createItem doesn't remove anything when creating a new item, but does remove the
+		//	extra item when updating.
 		
-		//@todo test updateItem(), setItem(), etc.
+		$expected['areas'] = array('frontend');
+		$this->translation->createItem($expected);
+		$first_item_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Test it exists:
+		$this->assertGreaterThan(0, $first_item_id);
+		
+		$expected['areas'] = array('adminhtml');
+		$this->translation->createItem($expected);
+		$second_item = $this->translation->getCollection()->getLastItem();
+		
+		//Test that both items exist:
+		$this->assertGreaterThan(0, $first_item_id);
+		$this->assertGreaterThan(0, $second_item->getTranslationId());
+		
+		//Test the current value:
+		$this->assertEquals($expected['translation'], $second_item->getTranslation());
+		
+		$expected['translation'] = 'temp';
+		$expected['areas'] = array('frontend', 'adminhtml');
+		$this->translation->createItem($expected);
+		
+		$third_item = $this->translation->getCollection()->getLastItem();
+		
+		//Test it exists:
+		$this->assertGreaterThan(0, $third_item->getTranslationId());
+		
+		//Test the current value:
+		$this->assertEquals($expected['translation'], $third_item->getTranslation());
+		
+		//Test that no other items exist:
+		$third_item->delete();
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		//Resetting stuff:
+		$expected['translation'] = 'test';
+		
+		// - same for updateItem()
+		
+		//Create first item:
+		$expected['areas'] = array('frontend');
+		$this->translation->createItem($expected);
+		$first_item_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+
+		//Create second item:
+		$expected['areas'] = array('adminhtml');
+		$this->translation->createItem($expected);
+		$second_item = $this->translation->getCollection()->getLastItem();
+		
+		//Test that both items exist:
+		$this->assertGreaterThan(0, $first_item_id);
+		$this->assertGreaterThan(0, $second_item->getTranslationId());
+		
+
+		$expected['translation_id'] = $second_item->getTranslationId();
+		$expected['areas'] = array('frontend', 'adminhtml');
+		$this->translation->updateItem($expected);
+		
+		$third_item = $this->translation->getCollection()->getLastItem();
+		
+		//Test it exists:
+		$this->assertGreaterThan(0, $third_item->getTranslationId());
+		
+		//Test that no other items exist:
+		$third_item->delete();
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		//Resetting stuff:
+		unset($expected['translation_id']);
+		
+		// - when the extra item has another area set, it won't be removed, just updated:
+		
+		//Create first item:
+		$expected['areas'] = array('frontend');
+		$this->translation->createItem($expected);
+		$first_item_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Test it exists:
+		$this->assertGreaterThan(0, $first_item_id);
+		
+		//Create second item:
+		$expected['areas'] = array('adminhtml', 'install');
+		$this->translation->createItem($expected);
+		$second_item_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Test that both items exist:
+		$this->assertGreaterThan(0, $first_item_id);
+		$this->assertGreaterThan(0, $second_item_id);
+		
+		$expected['areas'] = array('frontend', 'adminhtml');
+		$this->translation->createItem($expected);
+		
+		$third_item = $this->translation->getCollection()->getLastItem();
+		
+		//Test that the new item has both frontend and adminhtml:
+		$this->assertEquals(1, $third_item->getFrontend());
+		$this->assertEquals(1, $third_item->getAdminhtml());
+		$this->assertEquals(0, $third_item->getInstall());
+
+		//Test that the second item only has install set:
+		$second_item = $this->translation->load($second_item_id);
+		$this->assertEquals(0, $second_item->getFrontend());
+		$this->assertEquals(0, $second_item->getAdminhtml());
+		$this->assertEquals(1, $second_item->getInstall());
+		
+		//Test that there aren't three items instead of just two:
+		$this->assertEquals(2, count($this->translation->getCollection()->load()));
+		
+		//Resetting stuff:
+		$third_item->delete();
+		$second_item->delete();
+		
+		// - same for updateItem():
+		
+		//Create first item:
+		$expected['areas'] = array('frontend');
+		$this->translation->createItem($expected);
+		$first_item_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Test it exists:
+		$this->assertGreaterThan(0, $first_item_id);
+		
+		//Create second item:
+		$expected['areas'] = array('adminhtml', 'install');
+		$this->translation->createItem($expected);
+		$second_item_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Test it exists:
+		$this->assertGreaterThan(0, $second_item_id);
+		
+		//Update the first item:
+		$expected['areas'] = array('frontend', 'adminhtml');
+		$expected['translation_id'] = $first_item_id;
+		$this->translation->updateItem($expected);
+		
+		$first_item = $this->translation->load($first_item_id);
+		
+		//Test that the new item has both frontend and adminhtml:
+		$this->assertEquals(1, $first_item->getFrontend());
+		$this->assertEquals(1, $first_item->getAdminhtml());
+		$this->assertEquals(0, $first_item->getInstall());
+		
+		//Test that the second item only has install set:
+		$second_item = $this->translation->load($second_item_id);
+		$this->assertEquals(0, $second_item->getFrontend());
+		$this->assertEquals(0, $second_item->getAdminhtml());
+		$this->assertEquals(1, $second_item->getInstall());
+		
+		//Test that there aren't three items instead of just two:
+		$this->assertEquals(2, count($this->translation->getCollection()->load()));
+		
+		//Resetting stuff:
+		$first_item->delete();
+		$second_item->delete();
+		unset($expected['translation_id']);
+		
+		// updateItem() tests:
+		// - no translation attribute:
+		
+		//Create first item:
+		$this->translation->createItem($expected);
+		$first_item = $this->translation->getCollection()->getLastItem();
+		
+		//Update without a translation attribute:
+		$expected['translation_id'] = $first_item->getTranslationId();
+		unset($expected['translation']);
+		$this->translation->updateItem($expected);
+		
+		//Check that the item still has a translation:
+		$expected['translation'] = 'test';
+		$first_item = $this->translation->load($expected['translation_id']);
+		$this->assertEquals($expected['translation'], $first_item->getTranslation());
+		
+		//Resetting stuff:
+		$first_item->delete();
+		unset($expected['translation_id']);
+		
+		// - empty translation attribute:
+		
+		//Create first item:
+		$this->translation->createItem($expected);
+		$first_item = $this->translation->getCollection()->getLastItem();
+		
+		//Update without a translation attribute:
+		$expected['translation_id'] = $first_item->getTranslationId();
+		$expected['translation'] = '';
+		$this->translation->updateItem($expected);
+		
+		//Check that the item still has a translation:
+		$expected['translation'] = 'test';
+		$first_item = $this->translation->load($expected['translation_id']);
+		$this->assertEquals($expected['translation'], $first_item->getTranslation());
+		
+		//Resetting stuff:
+		$first_item->delete();
+		unset($expected['translation_id']);
+		
+		// - translation_id that doesn't exist:
+		
+		//Update without a translation attribute:
+		$expected['translation_id'] = 666;
+		$result = $this->translation->updateItem($expected);
+		
+		//Check that it returned false instead of running:
+		$this->assertEquals(0, $result);
+		
+		//Resetting stuff:
+		unset($expected['translation_id']);
+		
+		// - normal behaviour:
+	
+		//Create item:
+		$this->translation->createItem($expected);
+		$item = $this->translation->getCollection()->getLastItem();
+		
+		//Update:
+		$expected['translation_id'] = $item->getTranslationId();
+		$expected['translation'] = 'temp';
+		$expected['areas'] = array('frontend');
+		$this->translation->updateItem($expected);
+		
+		//Check the values:
+		$item = $this->translation->load($expected['translation_id']);
+		$this->assertEquals($expected['translation'], $item->getTranslation());
+		$this->assertEquals(1, $item->getFrontend());
+		$this->assertEquals(1, $item->getAdminhtml());
+		$this->assertEquals(0, $item->getInstall());
+
+		//Update again, but with a new area set:
+		$expected['areas'] = array('frontend', 'install');
+		$this->translation->updateItem($expected);
+		
+		//Check the values:
+		$item = $this->translation->load($expected['translation_id']);
+		$this->assertEquals(1, $item->getFrontend());
+		$this->assertEquals(1, $item->getAdminhtml());
+		$this->assertEquals(1, $item->getInstall());
+		
+		//Resetting stuff:
+		$item->delete();
+		$expected['areas'] = array('frontend', 'adminhtml');
+		$expected['translation'] = 'test';
+		unset($expected['translation_id']);
+		
+		//Make sure there aren't any extra items:
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		//Test setItem():
+		
+		// - translation_id isn't set:
+		$this->translation->setItem($expected);
+		$id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Make sure it created an item:
+		$this->assertGreaterThan(0, $id);
+		
+		// - translation_id set to zero:
+		$expected['translation_id'] = 0;
+		$expected['store_id'] = 1;
+		$this->translation->setItem($expected);
+				
+		//Make sure it created a new item:
+		$second_id = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		$this->assertNotEquals($id, $second_id);
+		
+		// - translation_id set:
+		$expected['translation_id'] = $id;
+		$expected['translation'] = 'temp';
+		$expected['store_id'] = $french_store;
+		$this->translation->setItem($expected);
+		$updated_item = $this->translation->load($expected['translation_id']);
+		
+		//Make sure the translation got updated:
+		$this->assertEquals($expected['translation'], $updated_item->getTranslation());
+		
+		//Resetting stuff:
+		$this->translation->load($id)->delete();
+		$this->translation->load($second_id)->delete();
+		$expected['translation'] ='test';
+		unset($expected['translation_id']);
+	
+	
+		//Test getIdByParams():
+	
+		// - without store_id, without areas
+		
+		//Create an item:
+		$this->translation->setItem($expected);
+		$actual = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		//Find it:
+		unset($expected['store_id']);
+		unset($expected['areas']);
+		$id = $this->translation->getIdByParams($expected);
+	
+		//Check that it wasn't found:
+		$this->assertFalse($id);
+			
+		// - with store_id, without areas
+		$expected['store_id'] = $french_store;
+		$id = $this->translation->getIdByParams($expected);
+		
+		//Check that it was found:
+		$this->assertEquals($id, $actual);
+		
+		// - with store_id, with areas (no item exists)
+		$this->translation->load($actual)->delete();
+		$id = $this->translation->getIdByParams($expected);
+		
+		//Check that it wasn't found:
+		$this->assertFalse($id);
+		
+		// - with store_id, with areas (an item exist with other areas)
+		$expected['areas'] = array('frontend', 'adminhtml');
+		$this->translation->setItem($expected);
+		$actual = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		$expected['areas'] = array('install');
+		$id = $this->translation->getIdByParams($expected);
+		
+		//Check that it wasn't found:
+		$this->assertFalse($id);
+		
+		// - with store_id, wih areas (the exact item exists)
+		$expected['areas'] = array('frontend','adminhtml');
+		$id = $this->translation->getIdByParams($expected);
+		
+		//Check that it wasn't found:
+		$this->assertEquals($id, $actual);
+		
+		//Test deleteTranslation()
+		
+		// - translation_id set
+		
+		//Create the item:
+		$this->translation->setItem($expected);
+		
+		//Make sure that there's an item:
+		$this->assertEquals(1, count($this->translation->getCollection()->load()));
+		
+		//Delete it:
+		$expected['translation_id'] = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		$this->translation->deleteTranslation($expected);
+		
+		//Make sure there aren't any items:
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		// - translation_id not set, string_id not set
+		
+		//Create the item:
+		unset($expected['translation_id']);
+		$this->translation->setItem($expected);
+		
+		//Try to delete the item:
+		unset($expected['string_id']);
+		$this->translation->deleteTranslation($expected);
+		
+		//Check that it wasn't deleted:
+		$this->assertEquals(1, count($this->translation->getCollection()->load()));
+		
+		// - translation_id not set, string_id set, store_id is null
+		$expected['string_id'] = $this->string_id;
+		$expected['store_id'] = null;
+		$this->translation->deleteTranslation($expected);
+		
+		//Check that it was deleted:
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		// - translation_id not set, string_id set, store_id set
+		$expected['store_id'] = $french_store;
+		$this->translation->setItem($expected);
+		
+		//Make sure that there's an item:
+		$this->assertEquals(1, count($this->translation->getCollection()->load()));
+		
+		$this->translation->deleteTranslation($expected);
+		
+		//Make sure there aren't any items:
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		// - two items match
+		
+		//Create the items:
+		$this->translation->setItem($expected);
+		$expected['areas'] = array('install');
+		$this->translation->setItem($expected);
+		
+		//Make sure that there are items:
+		$this->assertEquals(2, count($this->translation->getCollection()->load()));
+		
+		$this->translation->deleteTranslation($expected);
+
+		//Make sure there aren't any items:
+		$this->assertEquals(0, count($this->translation->getCollection()->load()));
+		
+		// - no items match
+		$this->translation->deleteTranslation($expected);
+		
+		//Cleanup:
+		$expected['areas'] = array('frontend', 'adminhtml');
+		
+		//Test getTranslatedStringsByStore():
+		
+		//Check that it returns zero when no items match:
+		$string_ids = $this->translation->getTranslatedStringsByStore(0);
+		$this->assertEquals(array(), $string_ids);
+		
+		//Check that it returns one when there's an item:
+		$this->translation->setItem($expected);
+		$item = $this->translation->getCollection()->getLastItem();
+		$string_ids = $this->translation->getTranslatedStringsByStore(2);
+		$this->assertEquals(array($item->getStringId()), $string_ids);
+		
+		//Cleanup:
+		$item->delete();
+		
+		//Test getTranslationsByStringId():
+		$this->assertEquals(0, count($this->translation->getTranslationsByStringId($this->string_id)));
+		
+		$this->translation->setItem($expected);
+		$item = $this->translation->getCollection()->getLastItem();
+		$this->assertEquals(1, count($this->translation->getTranslationsByStringId($this->string_id)));
+		
+		$this->assertEquals(0, count($this->translation->getTranslationsByStringId(666)));
+		
+		//Cleanup:
+		$item->delete();
+		
+		//Test getStringIdsByArea():
+		
+		$this->assertEquals(0, count($this->translation->getStringIdsByArea('frontend')));
+		
+		$this->translation->setItem($expected);
+		$item = $this->translation->getCollection()->getLastItem();
+		
+		$this->assertEquals(1, count($this->translation->getStringIdsByArea('frontend')));
+		
+		//Cleanup:
+		$item->delete();
+		
+		//Test getDuplicatesList():
+		
+		$this->assertEquals('', $this->translation->getDuplicatesList($french_store));
+		
+		$expected['areas'] = array('frontend');
+		$this->translation->setItem($expected);
+		$items = array($this->translation->getCollection()->getLastItem()->getTranslationId());
+		
+		$expected['areas'] = array('install');
+		$this->translation->setItem($expected);
+		$items[] = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		$this->assertEquals(1, count(explode(',', $this->translation->getDuplicatesList($french_store))));
+		
+		$expected['areas'] = array('adminhtml');
+		$this->translation->setItem($expected);
+		$items[] = $this->translation->getCollection()->getLastItem()->getTranslationId();
+		
+		$this->assertEquals(2, count(explode(',', $this->translation->getDuplicatesList($french_store))));
+		
+		//Cleanup:
+		foreach ($items as $item) {
+			$this->translation->load($item)->delete();
+		}
+	
+	}
+	
+	public function tearDown()
+	{
+		Mage::getModel('translator/string')->load($this->string_id)->delete();
 	}
 }

@@ -15,9 +15,9 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
   {
 	  $store_id = Mage::helper('translator')->getStoredSession('store');
       $collection = Mage::getModel('translator/string')->getCollection();
-
-      $this->setCollection($collection);
       
+      $this->setCollection($collection);
+
       if ($this->getCollection()) {
       
       	$this->_preparePage();
@@ -30,13 +30,19 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
       		$filter = $this->_defaultFilter;
       		//@todo move all db-related code out of the block.
       		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
+
       		$where = 'main_table.string_id = translator_translation.string_id'
 	      				.' AND translator_translation.store_id = '.$store_id;
       		$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
+      		
+      		$ar = Mage::helper('translator')->getStoredSession('area');
+      		if ($ar != '') {
+      			$where .= ' AND translator_translation.'.$ar.'=1';
+      		}
+      		
       		$this->getCollection()
 	      		->getSelect()
 	      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
-      		Mage::helper('translator')->setStoredSession('area', '');
       	}
       
       	if (is_string($filter)) {
@@ -56,23 +62,40 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
 
       		if ($area == '') {
 	      		$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
+
 	      		$where = 'main_table.string_id = translator_translation.string_id'
 		      				.' AND translator_translation.store_id = '.$store_id;
 	      		$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
+	      		
+	      		$ar = Mage::helper('translator')->getStoredSession('area');
+	      		if ($ar != '') {
+	      			$where .= ' AND translator_translation.'.$ar.'=1';
+	      		}
+	      		
 	      		$this->getCollection()
 		      		->getSelect()
 		      		->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
 	      		
       		} else {
+      			$duplicates = Mage::getModel('translator/translation')->getDuplicatesList($store_id);
+
+      			$where = 'main_table.string_id = translator_translation.string_id'
+      			.' AND translator_translation.store_id = '.$store_id;
+      			$where .= ($duplicates == '') ? '' : ' AND translator_translation.translation_id NOT IN ('.$duplicates.')';
+      			 
+      			$ar = Mage::helper('translator')->getStoredSession('area');
+      			if ($ar != '') {
+      				$where .= ' AND translator_translation.'.$ar.'=1';
+      			}
+      			 
       			$this->getCollection()
-      				->getSelect()
-      				->joinLeft(	'translator_translation',
-      							'main_table.string_id = translator_translation.string_id'
-      								.' AND translator_translation.store_id = '.$store_id
-      								.' AND translator_translation.'.$area.'=1',
-      							array('translation', 'translation_id'));
+      			->getSelect()
+      			->joinLeft(	'translator_translation',$where, array('translation', 'translation_id'));
+
+      			$this->getCollection()->addAreaFilter($area);
+      			
+      			$this->getChild('area_filter')->setInputValue($area);
       		}
-      		Mage::helper('translator')->setStoredSession('area', $area);
       		
       		$this->_setFilterValues($data);
       	}
@@ -180,7 +203,6 @@ class Wheelbarrow_Translator_Block_Adminhtml_Strings_Grid extends Mage_Adminhtml
   
   protected function _afterLoadCollection()
   {
-  	
   	$this->getCollection()->walk('afterLoad');
   	foreach ($this->getCollection() as $item) {
   		$translation = $item->getData('translation');

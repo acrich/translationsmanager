@@ -152,9 +152,17 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 	}
 	
 	//@todo either merge this into createItem or merge parts of the latter into this one.
+	//@todo add return values
 	public function updateItem($item)
 	{
 		$this->load($item['translation_id']);
+		
+		//@todo change the testing method to something prettier:
+		//Checking if there's really an item with that id:
+		$id = $this->getTranslationId();
+		if (!$id) {
+			return false;
+		}
 		
 		if (isset($item['translation']) && $item['translation'] != '') {
 			$this->setTranslation($item['translation']);
@@ -162,19 +170,24 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		
 		if (isset($item['areas'])) {
 			foreach (array('frontend', 'adminhtml', 'install') as $area) {
-				$this->setData($area, in_array($area, $item['areas']));
+				if (in_array($area, $item['areas'])) {
+					$this->setData($area, true);
+				}
 			}
 		}
 		
 		$data = $this->save()->getData();
 		
 		if (isset($item['areas'])) {
+			//@todo make sense of this one, we're not even using the 'areas' attribute in removeDuplicateAreas().
 			$data['areas'] = $item['areas'];
 			$this->removeDuplicateAreas($data);
 		}
-		
 	}
 	
+	//@todo move all the "create or update" logic in here, so we won't have to test things twice.
+	// for example, updateItem()'s test that the translation_id is real should move here, so we'll create a new item
+	// with the passed in attributes (which we don't do now).
 	public function setItem($item)
 	{
 		if (isset($item['translation_id']) && $item['translation_id'] != 0) {
@@ -184,12 +197,14 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		}
 	}
 	
+	//@todo change name to find.
 	public function getIdByParams($item)
 	{
-		if (is_null($item['store_id'])) {
+		if (!isset($item['store_id'])) {
 			$item['store_id'] = Mage_Core_Model_App::ADMIN_STORE_ID;
 		}
 		
+		//@todo check if we're really using this somewhere.
 		if (!is_array($item['store_id'])) {
 			$item['store_id'] = array($item['store_id']);
 		}
@@ -211,25 +226,28 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 	
 	public function deleteTranslation($item)
 	{
-		if (!isset($item['translation_id'])) {
-			if (isset($item['string_id'])) {
-				$items = $this->getCollection()
-					->addFieldToFilter('string_id', $item['string_id']);
-				if (isset($item['store_id'])) {
-					$items->addFieldToFilter('store_id', $item['store_id']);
-				}
-				if (isset($item['locale'])) {
-					$items->addFieldToFilter('locale', $item['locale']);
-				}
-				if (isset($item['area'])) {
-					$items->addFieldToFilter($item['area'], true);
-				}
-				if (count($items->load()) === 1) {
-					$item['translation_id'] = $items->getFirstItem()->getTranslationId();
-				}
-			}
+		if (isset($item['translation_id'])) {
+			return $this->load($item['translation_id'])->delete();
 		}
-		return $this->load($item['translation_id'])->delete();
+		
+		if (!isset($item['string_id'])) {
+			return false;
+		}
+		$items = $this->getCollection()
+			->addFieldToFilter('string_id', $item['string_id']);
+		
+		if (isset($item['store_id'])) {
+			$items->addFieldToFilter('store_id', $item['store_id']);
+		}
+		if (isset($item['locale'])) {
+			$items->addFieldToFilter('locale', $item['locale']);
+		}
+		
+		foreach ($items as $item) {
+			$item->delete();
+		}
+		
+		return $this;
 	}
 	
 	public function getTranslatedStringsByStore($store)
@@ -267,7 +285,7 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 		foreach ($items as $item) {
 			$string_id = $item->getStringId();
 			if (array_key_exists($string_id, $uniques)) {
-				$duplicates[$string_id] = $item->getTranslationId();
+				$duplicates[] = $item->getTranslationId();
 			} else {
 				$uniques[$string_id] = $item->getTranslationId();
 			}

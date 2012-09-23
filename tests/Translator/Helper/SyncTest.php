@@ -204,6 +204,12 @@ class Wheelbarrow_Translator_Helper_Sync_Test extends PHPUnit_Framework_TestCase
 			->getLastItem()
 			->delete();
 		
-		//@todo remove the string and translation items we created before.
+		//@todo make this a cleaner process.
+		foreach(Mage::getModel('translator/translation')->getCollection()->load() as $item) {
+			$item->delete();
+		}
+		foreach(Mage::getModel('translator/string')->getCollection()->load() as $item) {
+			$item->delete();
+		}
 	}
 }

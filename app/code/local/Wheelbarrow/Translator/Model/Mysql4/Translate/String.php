@@ -123,6 +123,7 @@ class Wheelbarrow_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mod
     		$locale = Mage::app()->getLocale()->getLocaleCode();
     	}
     	
+    	//@todo remove this whole part.
     	if ($storeId === false) {
     		$storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
     	} elseif ($storeId !== null) {
