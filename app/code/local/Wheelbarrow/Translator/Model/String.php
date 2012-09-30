@@ -51,38 +51,46 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 		if (isset($item['status'])) {
 			$data['status'] = $item['status'];
 		}
-		if (isset($item['module'])) {
-			$data['module'] = $item['module'];
-		}
 		if (isset($item['string']) && $item['string'] != '') {
 			if (strpos($item['string'], '::') !== false) {
 				list($item['module'], $item['string']) = explode('::', $item['string']);
 			}
 			$data['string'] = $item['string'];
 		}
-		
+		if (isset($item['module'])) {
+			$data['module'] = $item['module'];
+		}
+		//@todo remove the part that directs to createItem once we change everything to setItem().
+		//@todo refactor.
 		$string_id = $this->getResource()->getIdByParams($item);
-		if ($string_id && $string_id != $item['string_id']) {
-			$this->load($item['string_id'])->delete();
+		if ($string_id) {
+			if (isset($item['string_id']) && $string_id != $item['string_id']) {
+				$this->load($item['string_id'])->delete();
+			}
 			$data['string_id'] = $string_id;
 			//@todo get this out of the if statement:
 			$this->load($data['string_id'])->setData($data)->save();
 		} else {
-			$data['string_id'] = $item['string_id'];
-			$this->load($data['string_id'])->setData($data)->save();
+			if (isset($item['string_id'])) {
+				$data['string_id'] = $item['string_id'];
+				$this->load($data['string_id'])->setData($data)->save();
+			} else {
+				$data['string_id'] = $this->createItem($item);
+			}
 		}
 		return $data['string_id'];
 	}
 	
-	//@todo change this function's name, if it should even exist.
+	//@todo move the match finding to setItem, so that the rest of the logic could be shared with updateItem and 
+	// createItem. Then, write specific tests for the collection-based match finding used here.
 	public function prepareForSave($collection, $item) {
-		
-		if (!array_key_exists('module', $item)) {
-			$item['module'] = null;
-		}
 			
 		if (strpos($item['string'], '::') !== false) {
 			list($item['module'], $item['string']) = explode('::', $item['string']);
+		}
+		
+		if (!array_key_exists('module', $item)) {
+			$item['module'] = null;
 		}
 		
 		$string_id = null;

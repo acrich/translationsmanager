@@ -147,7 +147,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 					}
 				}
 				
-				$data['store_id'] = Mage::helper('translator')->getCurrentStore();
+				$data['store_id'] = Mage::helper('translator')->getStoredSession('store');
 
 				$data['areas'] = array();
 				foreach (array('frontend', 'adminhtml', 'install') as $area) {
@@ -256,7 +256,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     
     public function massDeleteTransAction() {
     	$string_ids = $this->getRequest()->getParam('strings');
-    	$store_id = Mage::helper('translator')->getCurrentStore();
+    	$store_id = Mage::helper('translator')->getStoredSession('store');
     	if(!is_array($string_ids)) {
     		Mage::getSingleton('adminhtml/session')->addError(Mage::helper('translator')->__('Please select item(s)'));
     	} else {

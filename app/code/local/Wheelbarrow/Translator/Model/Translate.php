@@ -37,14 +37,15 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     	}
     
     	$this->_data = array();
-    
-    	if (Mage::getStoreConfig('translator/options/module_override') == '2') {
+    	$disabled = Mage::getModel('translator/status')->getDisabledCode();
+    	
+    	if (Mage::getStoreConfig('translator/options/module_override') == $disabled) {
 	    	foreach ($this->getModulesConfig() as $moduleName=>$info) {
 	    		$info = $info->asArray();
 	    		$this->_loadModuleTranslation($moduleName, $info['files'], $forceReload);
 	    	}
     	}
-    	if (Mage::getStoreConfig('translator/options/theme_override') == '2') {
+    	if (Mage::getStoreConfig('translator/options/theme_override') == $disabled) {
     		$this->_loadThemeTranslation($forceReload);
     	}
     	
@@ -100,6 +101,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 	    		$string_id = Mage::getModel('translator/string')->createItem($data);
 	    		$register = Mage::helper('translator/sync')->getRegister();
 	    		$path = $register['data']['path'];
+	    		//@todo add a condition statement to check that the register returned a value.
 	    		Mage::getModel('translator/path')->createItem(array(
 							'path' => $path,
 							'string_id' => $string_id
@@ -125,8 +127,10 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 			$params = unserialize($string->getParameters());
 			if (is_array($params)) {
 				Mage::getModel('core/variable')->setStoreId(Mage::app()->getStore()->getId());
+				//@todo remove $key.
 				foreach ($params as $key => $param) {
 					if ($param['hardcoded']) {
+						//@todo why wouldn't it be set?
 						if (isset($args[$param['code_position']])) {
 							$args2[$param['position']] = $args[$param['code_position']];
 						}
@@ -161,7 +165,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     		Mage::log('could not get the adapter.');
     		return array();
     	}
-
+		//@todo remove the static table name.
     	$select = $adapter->select()
     	->from('core_translate', array('*'));
     	$data = $adapter->fetchAll($select);
@@ -170,6 +174,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     		$item['translation'] = $item['translate'];
     		
     		if (strpos($item['string'], '::') == false) {
+    			//@todo figure out what exactly happened here.
     			$item['module'] = 'Mage_Catalog';
     		}
     		
@@ -203,6 +208,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     	Mage::getModel('translator/string')->load($string_id)->delete();
     }
     
+    //@todo Transfer this to the sole location where it's currently being used.
     public function getEntriesByString($string)
     {
     	$string_id = Mage::getModel('translator/string')->getIdByString($string);

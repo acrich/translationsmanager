@@ -138,6 +138,10 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 	
 	public function getIdByParams($item)
 	{
+		if (!isset($item['string'])) {
+			return false;
+		}
+		
 		if (strpos($item['string'], '::') !== false) {
 			list($item['module'], $item['string']) = explode('::', $item['string']);
 		}

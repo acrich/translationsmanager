@@ -108,6 +108,7 @@ class Wheelbarrow_Translator_Model_Path extends Mage_Core_Model_Abstract
 		
 		$path_ids = array();
 		foreach ($items as $item) {
+			//@todo no reason for unique array keys here. Just remove the first line and modify the second to have no key.
 			$id = $item->getPathId();
 			$path_ids[$id] = $id;
 		}

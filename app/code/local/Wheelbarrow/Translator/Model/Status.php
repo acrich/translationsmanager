@@ -25,4 +25,9 @@ class Wheelbarrow_Translator_Model_Status extends Varien_Object
     {
     	return self::STATUS_DISABLED;
     }
+    
+    public function getEnabledCode()
+    {
+    	return self::STATUS_ENABLED;
+    }
 }
