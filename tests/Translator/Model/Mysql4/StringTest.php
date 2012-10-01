@@ -36,6 +36,35 @@ class Wheelbarrow_Translator_Model_Mysql4_String_Test extends PHPUnit_Framework_
 	 */
 	public function testGetTranslationArrayByModule()
 	{
+		//Set the current store view:
+		$stores = Mage::app()->getStores(true);
+		Mage::app()->setCurrentStore($stores[1]);
+		
+		//Set items:
+		$ids = array();
+		$data = array(
+					0 => array(
+						'string' => 'test', 
+						'module' => 'Wheelbarrow_Test',
+						'translation' => 'translated test',
+						'locale' => 'en_US',
+						'store_id' => 1
+					),
+					1 => array(
+						'string' => 'temp',
+						'module' => 'Wheelbarrow_Temp',
+						'translation' => 'translated temp',
+						'locale' => 'en_US',
+						'store_id' => 0
+					)
+				);
+		
+		$ids = array();
+		foreach($data as $item) {
+			$ids[] = $this->model->addEntry($item);
+		}
+		
+		
 		
 	}
 	

@@ -109,8 +109,8 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 						$data[$area] = in_array($area, $item['areas']);
 					}
 				}
-
-				$item['translation_id'] = $this->setData($data)->save()->getTranslationId();
+				$model_item = new Wheelbarrow_Translator_Model_Translation();
+				$item['translation_id'] = $model_item->setData($data)->save()->getTranslationId();
 			}
 		} else {
 			//@todo add a test for this scenario (existing item, and an update with translation set to nothing).

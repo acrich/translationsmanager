@@ -96,16 +96,12 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 				if ($string_item->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
 					$module = $string_item->getModule();
 					if (is_null($module) || $module == '') {
-						$scope = $storeId;
-						$string = $string_item->getString();
-					} else {
-						$scope = $module;
-						$string = $module . Mage_Core_Model_Translate::SCOPE_SEPARATOR . $string_item->getString();
+						$module = $storeId;	
 					}
-					if (!array_key_exists($scope, $results)) {
-						$results[$scope] = array();
+					if (!array_key_exists($module, $results)) {
+						$results[$module] = array();
 					}
-					$results[$scope][$string] = $item['translation'];
+					$results[$module][$string_item->getString()] = $item['translation'];
 				}
 			}
 		}

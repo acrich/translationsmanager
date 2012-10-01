@@ -126,21 +126,18 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 		if ($string->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
 			$params = unserialize($string->getParameters());
 			if (is_array($params)) {
-				Mage::getModel('core/variable')->setStoreId(Mage::app()->getStore()->getId());
+				$storeId = Mage::app()->getStore()->getId();
 				//@todo remove $key.
 				foreach ($params as $key => $param) {
 					if ($param['hardcoded']) {
-						//@todo why wouldn't it be set?
-						if (isset($args[$param['code_position']])) {
-							$args2[$param['position']] = $args[$param['code_position']];
-						}
+						$args2[$param['position']] = isset($args[$param['code_position']]) ? $args[$param['code_position']] : '';
 					} else {
 						$splits = explode('{{customVar ', $param['value']);
 						$param['value'] = '';
 						foreach ($splits as $split) {
 							preg_match("/code=(.*)}}/U", $split, $matches);
 							if (count($matches)) {
-								$string = Mage::getModel('core/variable')->loadByCode($matches[1])->getValue('html');
+								$string = Mage::getModel('core/variable')->setStoreId($storeId)->loadByCode($matches[1])->getValue('html');
 								$split = preg_replace("/code=(.*)}}/U", $string, $split);
 							}
 							$param['value'] .= $split;
@@ -171,13 +168,7 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     	$data = $adapter->fetchAll($select);
     
     	foreach ($data as $item) {
-    		$item['translation'] = $item['translate'];
-    		
-    		if (strpos($item['string'], '::') == false) {
-    			//@todo figure out what exactly happened here.
-    			$item['module'] = 'Mage_Catalog';
-    		}
-    		
+    		$item['translation'] = $item['translate'];    		
     		$this->addEntry($item);
     	}
 

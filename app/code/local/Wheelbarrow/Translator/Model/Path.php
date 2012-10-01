@@ -13,12 +13,13 @@ class Wheelbarrow_Translator_Model_Path extends Mage_Core_Model_Abstract
 	}
 	
 	protected function _saveItem($item) {
-		$this->setPath($item['path'])
+		$model_item = new Wheelbarrow_Translator_Model_Path();
+		$model_item->setPath($item['path'])
 			->setStringId($item['string_id'])
 			->setData('file', $item['file'])
 			->setData('offset', $item['offset'])
 			->save();
-		return $this->getPathId();
+		return $model_item->getPathId();
 	}
 	
 	public function createItem($item)
@@ -45,7 +46,7 @@ class Wheelbarrow_Translator_Model_Path extends Mage_Core_Model_Abstract
 							$record->setData('file', $item['file'])
 							->setData('offset', $item['offset'])
 								->save();
-							$path_id = $this->getPathId();
+							$path_id = $record->getPathId();
 							$match = true;
 							continue;
 						}
@@ -65,10 +66,11 @@ class Wheelbarrow_Translator_Model_Path extends Mage_Core_Model_Abstract
 			if (count($items)) {
 				$path_id = $items->getFirstItem()->getPathId();
 			} else {
-				$this->setPath($item['path'])
+				$model_item = new Wheelbarrow_Translator_Model_Path();
+				$model_item->setPath($item['path'])
 				->setStringId($item['string_id'])
 				->save();
-				$path_id = $this->getPathId();
+				$path_id = $model_item->getPathId();
 			}
 		}
 		return $path_id;

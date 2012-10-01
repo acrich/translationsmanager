@@ -32,8 +32,8 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 			$data['status'] = (isset($item['status'])) ? $item['status'] : 1;
 			$data['module'] = (array_key_exists('module', $item)) ? $item['module'] : null;
 			
-			$this->setData($data)->save();
-			$string_id = $this->getStringId();
+			$model_item = new Wheelbarrow_Translator_Model_String();
+			$string_id = $model_item->setData($data)->save()->getStringId();
 		} else {
 			$item['string_id'] = $string_id;
 			$string_id = $this->updateItem($item);
@@ -129,8 +129,8 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 		if (isset($item['parameters'])) {
 			$data['parameters'] = serialize($item['parameters']);
 		}
-		
-		return $this->setData($data)->save()->getStringId();
+		$model_item = new Wheelbarrow_Translator_Model_String();
+		return $model_item->setData($data)->save()->getStringId();
 	}
 	
 	public function setItem($item) {
