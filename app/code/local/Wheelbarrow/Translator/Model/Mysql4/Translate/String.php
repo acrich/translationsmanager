@@ -167,7 +167,7 @@ class Wheelbarrow_Translator_Model_Mysql4_Translate_String extends Mage_Core_Mod
     				'areas' => array(Mage::getDesign()->getArea()),
     				'strict' => false
     			);
-    	Mage::log($item);
+
     	Mage::getModel('translator/translate')->addEntry($item);
     
     	return $this;

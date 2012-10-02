@@ -154,17 +154,15 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     
     public function migrateCoreDb()
     {
-    	$model = Mage::getModel('core/translate');
-    	$resource = $model->getResource();
-    	$adapter = $this->getResource()->getReadConnection();
-    
+    	$model = new Mage_Core_Model_Translate();
+    	$adapter = $model->getResource()->getReadConnection();
     	if (!$adapter) {
     		Mage::log('could not get the adapter.');
     		return array();
     	}
-		//@todo remove the static table name.
+
     	$select = $adapter->select()
-    	->from('core_translate', array('*'));
+    	->from($model->getResource()->getMainTable(), array('*'));
     	$data = $adapter->fetchAll($select);
     
     	foreach ($data as $item) {
