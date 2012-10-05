@@ -20,7 +20,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 			$locales[$locale] = $locale;
 		}
 		return $locales;
-	}
+	}	
 	
 	/**
 	 * 
@@ -212,9 +212,14 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 
     	foreach (array('frontend', 'adminhtml') as $area) {
     		$package->setArea($area);
-			
 			foreach ($locales as $locale) {
-		        $params['_area'] = $package->getArea();
+				
+				//Setting the package according to a store view set to this locale:
+				$store = $this->_getLocaleStore($locale);
+		        Mage::app()->setCurrentStore($store);
+		        $package->setPackageName();
+		        
+				$params['_area'] = $package->getArea();
 		        $params['_package'] = $package->getPackageName();
 		        $params['_theme'] = $package->getTheme('locale');
 		        
@@ -229,14 +234,14 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		    	$params['_area'].DS.$params['_package'].DS.$params['_theme'] . DS . 'locale' . DS .
 		    	$locale;
 		    	$file = $dir . DS . 'translate.csv';
-		    	
+
 		    	if (!file_exists($file)) {
 		    		$params['_theme']   = $package->getDefaultTheme();
 
 		    		$dir = Mage::getBaseDir('design').DS.
 		    		$params['_area'].DS.$params['_package'].DS.$params['_theme'] . DS . 'locale' . DS .
 		    		$locale;
-		
+
 		    		$file = $dir . DS . 'translate.csv';
 		    		
 		    		if (!file_exists($file)) {
@@ -250,7 +255,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 		    			$dir = Mage::getBaseDir('design').DS.
 		    			$params['_area'].DS.$params['_package'].DS.$params['_theme'] . DS . 'locale' . DS .
 		    			$locale;
-		
+
 		    			$file = $dir . DS . 'translate.csv';
 		    		}
 		    	}
@@ -261,12 +266,11 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 				$data = array_merge($data, (array)$pairs);
 			}
 		}
-		
+
 		$batches = array_chunk($data, Mage::getStoreConfig('translator/options/batch_size'));
 		foreach ($batches as $batch) {
 			Mage::getModel('translator/cache')->createItem('batch', $batch);
 		}
-		
 		Mage::helper('translator/sync')->setRegisterData(array(
 				'completed' => 0, 
 				'total' => count($data)

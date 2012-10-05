@@ -184,10 +184,8 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
     
  	public function addMultipleEntries($batch)
     {
-    	$string_col = Mage::getModel('translator/string')->getCollection()->load();
-    	$translation_col = Mage::getModel('translator/translation')->getCollection()->load();
-    	foreach ($batch as $key => $item) {
-    		$item['string_id'] = Mage::getModel('translator/string')->prepareForSave($string_col, $item);
+    	foreach ($batch as $item) {
+    		$item['string_id'] = Mage::getModel('translator/string')->setItem($item);
     		Mage::getModel('translator/translation')->setItem($item);
     	}
     }

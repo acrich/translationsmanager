@@ -151,7 +151,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 
 				$data['areas'] = array();
 				foreach (array('frontend', 'adminhtml', 'install') as $area) {
-					if (!empty($data[$area])) {
+					if (array_key_exists($area, $data) && $data[$area] == 1) {
 						$data['areas'][] = $area;
 					}
 				}
@@ -236,11 +236,13 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         if(!is_array($string_ids)) {
             Mage::getSingleton('adminhtml/session')->addError(Mage::helper('translator')->__('Please select item(s)'));
         } else {
+        	//getParam() returns the array key and we want the status model values, so this is the conversion:
+        	$status = ($this->getRequest()->getParam('status') != 2) ? $this->getRequest()->getParam('status') : 0;
             try {
                 foreach ($string_ids as $string_id) {
                     Mage::getSingleton('translator/string')
                         ->load($string_id)
-                        ->setStatus($this->getRequest()->getParam('status'))
+                        ->setStatus($status)
                         ->setIsMassupdate(true)
                         ->save();
                 }
@@ -262,7 +264,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     	} else {
     		try {
     			foreach ($string_ids as $string_id) {
-    				$id = Mage::getModel('translator/translation')->getIdByParams($string_id, $store_id);
+    				$id = Mage::getModel('translator/translation')->getIdByParams(array('string_id' => $string_id, 'store_id' => $store_id));
     				Mage::getModel('translator/translation')->load($id)->delete();
     			}
     			Mage::getSingleton('adminhtml/session')->addSuccess(
@@ -413,6 +415,12 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
     }
     
     public function syncAction() {
+    	if ($this->getRequest()->getParam('stopFlag') != 'false') {
+    		$register = Mage::helper('translator/sync')->getRegister();
+    		$register['state'] = false;
+    		Mage::helper('translator/sync')->setRegister($register);
+    	}
+    	
     	$output = Mage::helper('translator/sync')->iterator();
     	$this->getResponse()->setBody(json_encode($output));
     }

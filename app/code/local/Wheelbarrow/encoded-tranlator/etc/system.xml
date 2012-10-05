@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <wheelbarrow translate="label" module="translator">
+            <label>Wheelbarrow</label>
+            <sort_order>99999</sort_order>
+        </wheelbarrow>
+    </tabs>
+    <sections>
+        <translator translate="label" module="translator">
+            <label>Translations Manager</label>
+            <tab>wheelbarrow</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>1000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <options translate="label">
+                    <label>Options</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+        				<batch_size>
+            				<label>Batch Size</label>
+           					<frontend_type>text</frontend_type>
+            				<sort_order>1</sort_order>
+            				<show_in_default>1</show_in_default>
+            				<show_in_website>1</show_in_website>
+            				<show_in_store>1</show_in_store>                    
+        				</batch_size>
+        				<module_override>
+            				<label>Override Module CSV Files</label>
+           					<frontend_type>select</frontend_type>
+           					<source_model>translator/status</source_model>
+            				<sort_order>1</sort_order>
+            				<show_in_default>1</show_in_default>
+            				<show_in_website>1</show_in_website>
+            				<show_in_store>1</show_in_store>                    
+        				</module_override>
+        				<theme_override>
+            				<label>Override Theme CSV Files</label>
+           					<frontend_type>select</frontend_type>
+           					<source_model>translator/status</source_model>
+            				<sort_order>1</sort_order>
+            				<show_in_default>1</show_in_default>
+            				<show_in_website>1</show_in_website>
+            				<show_in_store>1</show_in_store>                    
+        				</theme_override>
+    				</fields>
+                </options>
+            </groups>
+        </translator>
+    </sections>
+</config>

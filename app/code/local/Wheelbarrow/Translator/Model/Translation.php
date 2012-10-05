@@ -80,6 +80,12 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 				foreach (array('frontend', 'adminhtml', 'install') as $area) {
 					$data[$area] = in_array($area, $item['areas']);
 				}
+			} else {
+				foreach (array('frontend', 'adminhtml', 'install') as $area) {
+					if (in_array($area, $item['areas'])) {
+						$data[$area] = true;
+					}
+				}
 			}
 			//@todo if it's not set to strict then no data[$area] are set, only the general $data['areas'],
 			//	in which case remove duplicates won't work right. I bypassed it with an if statement,
@@ -172,6 +178,10 @@ class Wheelbarrow_Translator_Model_Translation extends Mage_Core_Model_Abstract
 			foreach (array('frontend', 'adminhtml', 'install') as $area) {
 				if (in_array($area, $item['areas'])) {
 					$this->setData($area, true);
+				} else {
+					if (isset($item['strict']) && $item['strict']) {
+						$this->setData($area, false);
+					}
 				}
 			}
 		}

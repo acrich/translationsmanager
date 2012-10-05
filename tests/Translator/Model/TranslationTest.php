@@ -892,7 +892,7 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		$item = $this->translation->load($expected['translation_id']);
 		$this->assertEquals($expected['translation'], $item->getTranslation());
 		$this->assertEquals(1, $item->getFrontend());
-		$this->assertEquals(1, $item->getAdminhtml());
+		$this->assertEquals(0, $item->getAdminhtml());
 		$this->assertEquals(0, $item->getInstall());
 
 		//Update again, but with a new area set:
@@ -902,7 +902,7 @@ class Wheelbarrow_Translator_Model_Translation_Test extends PHPUnit_Framework_Te
 		//Check the values:
 		$item = $this->translation->load($expected['translation_id']);
 		$this->assertEquals(1, $item->getFrontend());
-		$this->assertEquals(1, $item->getAdminhtml());
+		$this->assertEquals(0, $item->getAdminhtml());
 		$this->assertEquals(1, $item->getInstall());
 		
 		//Resetting stuff:

@@ -120,7 +120,7 @@
 ## you can put here your magento root folder
 ## path relative to web root
 
-    #RewriteBase /magento/
+    RewriteBase /translator/ 
 
 ############################################
 ## uncomment next line to enable light API calls processing
@@ -154,19 +154,25 @@
 ############################################
 ## always send 404 on missing files in these folders
 
-    RewriteCond %{REQUEST_URI} !^/(media|skin|js)/
+#    RewriteCond %{REQUEST_URI} !^/(media|skin|js)/
 
 ############################################
 ## never rewrite for existing files, directories and links
 
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-l
+#    RewriteCond %{REQUEST_FILENAME} !-f
+#    RewriteCond %{REQUEST_FILENAME} !-d
+#    RewriteCond %{REQUEST_FILENAME} !-l
 
 ############################################
 ## rewrite everything else to index.php
 
-    RewriteRule .* index.php [L]
+#    RewriteRule .* index.php [L]
+
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /translator/index.php [L]
+
 
 </IfModule>
 

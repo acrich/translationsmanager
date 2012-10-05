@@ -148,7 +148,7 @@ class Wheelbarrow_Translator_Model_Mysql4_String extends Mage_Core_Model_Mysql4_
 		$select = $adapter->select()
 			->from($this->getMainTable(), array('string_id'))
 			->where('string = ?', $string);
-		if (isset($item['module'])) {
+		if (isset($item['module']) && $item['module'] != '') {
 			$select->where('module = ?', $item['module']);
 		} elseif (array_key_exists('module', $item)) {
 			$select->where('module IS NULL');

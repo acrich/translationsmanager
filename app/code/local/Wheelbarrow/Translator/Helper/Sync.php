@@ -136,8 +136,10 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 			->getLastItem();
 		
 		//Extracting just the content (register) of that item.
+		if (isset($reg)) {
 		$reg = $reg->getRegister();
 		$reg = unserialize($reg);
+		}
 		
 		return $reg;
 	}
@@ -169,43 +171,43 @@ class Wheelbarrow_Translator_Helper_Sync extends Mage_Core_Helper_Abstract
 			case self::CSV_SCAN_ACTION:
 			case self::THEME_SCAN_ACTION:
 						
-						//Retrieve a list of string pairs to save.
-						$batch = $this->popBatch();
-						
-						if (is_array($batch) && count($batch)) {
-							//Save the pairs to the db.
-							Mage::getModel('translator/translate')->addMultipleEntries($batch);
-							
-							//Update the count, for outputing progress to the admin.
-							$register['data']['completed'] += count($batch);
-							$output['data'] = 'processed '.$register['data']['completed']. ' entries out of '.$register['data']['total'].' total.';
-							$this->setRegister($register);
-							
-							//Mark the 'state' flag as true so that sync.js will call for the next batch.
-							$output['state'] = true;
-							break;
-						} else {
-							
-							//@todo remove the sync item instead of emptying it out (and change the test for that).
-							$this->setRegister(array('state' => false));
-							
-							// Set the 'state' flag to false so it won't re-run 
-							// as there aren't any batches left.
-							$output['state'] = false;
-							break;
-						}
-				case self::PATH_SCAN_ACTION:
+				//Retrieve a list of string pairs to save.
+				$batch = $this->popBatch();
+				
+				if (is_array($batch) && count($batch)) {
+					//Save the pairs to the db.
+					Mage::getModel('translator/translate')->addMultipleEntries($batch);
 					
-					//Update the admin message area with the new results from the observer.
-					$output['data'] = $register['data']['message'];
+					//Update the count, for outputing progress to the admin.
+					$register['data']['completed'] += count($batch);
+					$output['data'] = 'processed '.$register['data']['completed']. ' entries out of '.$register['data']['total'].' total.';
+					$this->setRegister($register);
 					
-					//If this was the first run, mark this flag as false so it won't re-open the page.
-					if ($register['data']['go_to_url']) {
-						$output['url'] = $register['data']['path'];
-						$register['data']['go_to_url'] = false;
-						$this->setRegister($register);
-					}
+					//Mark the 'state' flag as true so that sync.js will call for the next batch.
+					$output['state'] = true;
 					break;
+				} else {
+					
+					//@todo remove the sync item instead of emptying it out (and change the test for that).
+					$this->setRegister(array('state' => false));
+					
+					// Set the 'state' flag to false so it won't re-run 
+					// as there aren't any batches left.
+					$output['state'] = false;
+					break;
+				}
+			case self::PATH_SCAN_ACTION:
+				
+				//Update the admin message area with the new results from the observer.
+				$output['data'] = $register['data']['message'];
+				
+				//If this was the first run, mark this flag as false so it won't re-open the page.
+				if ($register['data']['go_to_url']) {
+					$output['url'] = $register['data']['path'];
+					$register['data']['go_to_url'] = false;
+					$this->setRegister($register);
+				}
+				break;
 		}
 		
 		return $output;

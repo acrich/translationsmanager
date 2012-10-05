@@ -130,7 +130,9 @@ class Wheelbarrow_Translator_Model_String extends Mage_Core_Model_Abstract
 			$data['parameters'] = serialize($item['parameters']);
 		}
 		$model_item = new Wheelbarrow_Translator_Model_String();
-		return $model_item->setData($data)->save()->getStringId();
+		$collection->addItem($model_item->setData($data));
+		
+		return $collection;
 	}
 	
 	public function setItem($item) {
