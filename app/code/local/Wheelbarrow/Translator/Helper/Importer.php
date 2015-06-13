@@ -20,7 +20,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 			$locales[$locale] = $locale;
 		}
 		return $locales;
-	}	
+	}
 	
 	/**
 	 * 
@@ -207,15 +207,17 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 	public function pushThemeCsvsToQueue() {
 		$params = array('_type' => 'locale');
     	$package = Mage::getDesign();
-    	$locales = $this->_getLocales();
     	$data = array();
 
     	foreach (array('frontend', 'adminhtml') as $area) {
     		$package->setArea($area);
-			foreach ($locales as $locale) {
-				
+
+    		$stores = Mage::app()->getStores(true);
+			$locales = array();
+			foreach ($stores as $store) {
+				$locale = $store->getConfig('general/locale/code');
+
 				//Setting the package according to a store view set to this locale:
-				$store = $this->_getLocaleStore($locale);
 		        Mage::app()->setCurrentStore($store);
 		        $package->setPackageName();
 		        

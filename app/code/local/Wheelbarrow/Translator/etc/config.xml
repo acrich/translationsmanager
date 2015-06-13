@@ -47,21 +47,10 @@
 				</all>
 				<admin>
 					<children>
-						<translator>
-							<title>Translations Manager</title>
+						<Wheelbarrow_Translator>
+							<title>Translator Module</title>
 							<sort_order>10</sort_order>
-							<children>
-								<manage translate="title" module="translator">
-									<title>Manage Translations</title>
-                </manage>
-                <sync translate="title" module="translator">
-									<title>Sync A Page</title>
-                </sync>
-                <resources translate="title" module="translator">
-									<title>Manage Resources</title>
-                </resources>
-							</children>
-						</translator>
+						</Wheelbarrow_Translator>
 						<system>
                             <children>
                                 <config>
