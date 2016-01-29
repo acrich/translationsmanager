@@ -17,65 +17,76 @@
         </routers>
     </admin>
     <adminhtml>
-		<menu>
-			<translator module="translator">
-				<title>Internationalization</title>
-				<sort_order>71</sort_order>               
-				<children>
-					<manage module="translator">
-						<title>Manage Translations</title>
-						<sort_order>0</sort_order>
-						<action>adminhtml/translator/manage</action>
-					</manage>
-					<pagescan module="translator">
-						<title>Scan A Page</title>
-						<sort_order>1</sort_order>
-						<action>adminhtml/translator/pagescan</action>
-					</pagescan>
-					<sync>
-						<title>Sync Resources</title>
-						<sort_order>2</sort_order>
-						<action>adminhtml/translator/syncResources</action>
-					</sync>
-				</children>
-			</translator>
-		</menu>
-		<acl>
-			<resources>
-				<all>
-					<title>Allow Everything</title>
-				</all>
-				<admin>
-					<children>
-						<Wheelbarrow_Translator>
-							<title>Translator Module</title>
-							<sort_order>10</sort_order>
-						</Wheelbarrow_Translator>
-						<system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <translator>
-                                            <title>Translations Manager</title>
-                                        </translator>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-					</children>
-				</admin>
-			</resources>
-		</acl>
+    <menu>
+      <translator module="translator">
+        <title>Internationalization</title>
+        <sort_order>71</sort_order>               
+        <children>
+          <manage module="translator">
+            <title>Manage Translations</title>
+            <sort_order>0</sort_order>
+            <action>adminhtml/translator/manage</action>
+          </manage>
+          <pagescan module="translator">
+            <title>Scan A Page</title>
+            <sort_order>1</sort_order>
+            <action>adminhtml/translator/pagescan</action>
+          </pagescan>
+          <sync>
+            <title>Import Translation Files</title>
+            <sort_order>2</sort_order>
+            <action>adminhtml/translator/syncResources</action>
+          </sync>
+        </children>
+      </translator>
+    </menu>
+    <acl>
+      <resources>
+        <all>
+          <title>Allow Everything</title>
+        </all>
+        <admin>
+          <children>
+            <translator>
+              <title>Translations Manager</title>
+              <sort_order>10</sort_order>
+              <children>
+                <manage translate="title" module="translator">
+                  <title>Manage Translations</title>
+                </manage>
+                <pagescan translate="title" module="translator">
+                  <title>Scan A Page</title>
+                </pagescan>
+                <sync translate="title" module="translator">
+                  <title>Import Translation Files</title>
+                </sync>
+              </children>
+            </translator>
+            <system>
+              <children>
+                  <config>
+                      <children>
+                          <translator>
+                              <title>Translations Manager</title>
+                          </translator>
+                      </children>
+                  </config>
+              </children>
+          </system>
+          </children>
+        </admin>
+      </resources>
+    </acl>
     </adminhtml>
     <default>
-    	<translator>
-     	   <options>
-     	       <batch_size>30</batch_size>
-     	       <module_override>1</module_override>
-     	       <theme_override>1</theme_override>
-     	   </options>
-    	</translator>
-	</default>  
+      <translator>
+          <options>
+              <batch_size>30</batch_size>
+              <module_override>1</module_override>
+              <theme_override>1</theme_override>
+          </options>
+      </translator>
+  </default>  
   <global>
       <models>
           <translator>
@@ -88,23 +99,23 @@
                   <cache>
                       <table>translator_cache</table>
                   </cache>
-               	<string>
-                  	<table>translator_string</table>
-              	</string>
-              	<translation>
-                  	<table>translator_translation</table>
-              	</translation>
-              	<path>
-                  	<table>translator_path</table>
-              	</path>
+                 <string>
+                    <table>translator_string</table>
+                </string>
+                <translation>
+                    <table>translator_translation</table>
+                </translation>
+                <path>
+                    <table>translator_path</table>
+                </path>
               </entities>
           </translator_mysql4>
           <core>
-          	<rewrite>
-          		<translate>Wheelbarrow_Translator_Model_Translate</translate>
-          		<translate_string>Wheelbarrow_Translator_Model_Translate_String</translate_string>
-          		<translate_inline>Wheelbarrow_Translator_Model_Translate_Inline</translate_inline>
-          	</rewrite>
+            <rewrite>
+              <translate>Wheelbarrow_Translator_Model_Translate</translate>
+              <translate_string>Wheelbarrow_Translator_Model_Translate_String</translate_string>
+              <translate_inline>Wheelbarrow_Translator_Model_Translate_Inline</translate_inline>
+            </rewrite>
           </core>
       </models>
       <resources>
@@ -139,24 +150,24 @@
           </translator>
       </helpers>
       <events>
-    		<controller_front_send_response_after>
-      		<observers>
-      			<wheelbarrow_translator>
-          			<type>singleton</type>
-          			<class>Wheelbarrow_Translator_Model_Observer</class>
-          			<method>notifyCompletion</method>
-        			</wheelbarrow_translator>
-      		</observers>
-    		</controller_front_send_response_after>
-    		<core_block_abstract_to_html_before>
-      		<observers>
-      			<wheelbarrow_translator>
-          			<type>singleton</type>
-          			<class>Wheelbarrow_Translator_Model_Observer</class>
-          			<method>getBlockTemplate</method>
-        			</wheelbarrow_translator>
-      		</observers>
-    		</core_block_abstract_to_html_before>  
-  	</events>
+        <controller_front_send_response_after>
+          <observers>
+            <wheelbarrow_translator>
+                <type>singleton</type>
+                <class>Wheelbarrow_Translator_Model_Observer</class>
+                <method>notifyCompletion</method>
+              </wheelbarrow_translator>
+          </observers>
+        </controller_front_send_response_after>
+        <core_block_abstract_to_html_before>
+          <observers>
+            <wheelbarrow_translator>
+                <type>singleton</type>
+                <class>Wheelbarrow_Translator_Model_Observer</class>
+                <method>getBlockTemplate</method>
+              </wheelbarrow_translator>
+          </observers>
+        </core_block_abstract_to_html_before>  
+    </events>
   </global>
 </config>
