@@ -109,7 +109,9 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 	    	}
 		}
     	
+        $string = null;
 		if ($text instanceof Mage_Core_Model_Translate_Expr) {
+            if (strpos($text->getText(), '%') !== false) {
 			$string_id = Mage::getModel('translator/string')->getIdByString($text->getCode());
 			if (!$string_id) {
 				$string_id = Mage::getModel('translator/string')->getResource()->getIdByParams(array(
@@ -118,12 +120,15 @@ class Wheelbarrow_Translator_Model_Translate extends Mage_Core_Model_Translate
 						));
 			}
 			$string = Mage::getModel('translator/string')->load($string_id);
+            }
 		} else {
+            if (strpos($text, '%') !== false) {
 			$string = Mage::getModel('translator/string')->getItemByString($text);
+		}
 		}
 		$args2 = $args;
 		
-		if ($string->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
+		if ($string !== null && $string->getStatus() != Mage::getModel('translator/status')->getDisabledCode()) {
 			$params = unserialize($string->getParameters());
 			if (is_array($params)) {
 				$storeId = Mage::app()->getStore()->getId();
