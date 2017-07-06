@@ -20,15 +20,15 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         }
         return Mage::getSingleton('admin/session')->isAllowed('translator/manage');
     }
- 
+
     public function indexAction() {
         
         $this->loadLayout()
             ->_setActiveMenu('translator/manage')
             ->_addBreadcrumb(Mage::helper('translator')->__('Translations Manager'), Mage::helper('translator')->__('translations Manager'));
-        
+
         $this->_setStore();
-        
+
         if ($this->getRequest()->getParam('area_switch')) {
             Mage::helper('translator')->setStoredSession('area', strtolower($this->getRequest()->getParam('area')));
         }
@@ -56,13 +56,13 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
 
         $id     = $this->getRequest()->getParam('id');
         $model  = Mage::getModel('translator/string')->load($id);
-        
+
         if ($model->getId() || $id == 0) {
             $data = Mage::getSingleton('adminhtml/session')->getTranslatorData(true);
             if (!empty($data)) {
                 $model->setData($data);
             }
-            
+
             $params = array(
                 'string_id' => $model->getId(), 
                 'store_id' => $store_id
@@ -70,7 +70,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
             if ($area != '') {
                 $params['areas'] = array($area);
             }
-            
+
             $translation_id = Mage::getModel('translator/translation')->getIdByParams($params);
             if ($translation_id) {
                 $item = Mage::getModel('translator/translation')->load($translation_id);
@@ -92,18 +92,18 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
                     }
                 }
             }
-            
+
             Mage::register('translator_data', $model);
-            
+
             $this->loadLayout();
             $this->_setActiveMenu('translator/manage');
 
             $this->_addBreadcrumb(Mage::helper('translator')->__('Translations Manager'), Mage::helper('translator')->__('Translations Manager'));
-            
+
             $this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
             $this->getLayout()->getBlock('head')->addJs('wheelbarrow/edit.js');
-            
+
             $this->_addContent($this->getLayout()->createBlock('translator/adminhtml_strings_edit'))
                 ->_addLeft($this->getLayout()->createBlock('translator/adminhtml_store_switcher'))
                 ->_addLeft($this->getLayout()->createBlock('translator/adminhtml_area_switcher'))
@@ -115,7 +115,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
             $this->_redirect('*/*/');
         }
     }
-    
+
     public function pathsGridAction()
     {
         $this->getResponse()->setBody(
@@ -123,11 +123,11 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
                 ->toHtml()
         );
     }
- 
+
     public function newAction() {
         $this->_forward('edit');
     }
- 
+
     public function saveAction() {
         if ($data = $this->getRequest()->getPost()) {
             try {
@@ -155,7 +155,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
                         }
                     }
                 }
-                
+
                 $data['store_id'] = Mage::helper('translator')->getStoredSession('store');
 
                 $data['areas'] = array();
@@ -187,7 +187,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         Mage::getSingleton('adminhtml/session')->addError(Mage::helper('translator')->__('Unable to find item to save'));
         $this->_redirect('*/*/');
     }
- 
+
     public function deleteAction() {
         if( $this->getRequest()->getParam('id') > 0 ) {
             try {
@@ -202,7 +202,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         }
         $this->_redirect('*/*/');
     }
-    
+
     public function deleteTranslationAction() {
         if( $this->getRequest()->getParam('translation_id') > 0 ) {
             try {
@@ -238,7 +238,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         }
         $this->_redirect('*/*/index');
     }
-    
+
     public function massStatusAction()
     {
         $string_ids = $this->getRequest()->getParam('strings');
@@ -264,7 +264,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         }
         $this->_redirect('*/*/index');
     }
-    
+
     public function massDeleteTransAction() {
         $string_ids = $this->getRequest()->getParam('strings');
         $store_id = Mage::helper('translator')->getStoredSession('store');
@@ -287,7 +287,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         }
         $this->_redirect('*/*/index');
     }
-  
+
     public function exportCsvAction()
     {
         $fileName   = 'translations.csv';
@@ -321,63 +321,63 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         $response->sendResponse();
         die;
     }
-    
+
     public function syncResourcesAction() {
         $this->loadLayout();
         $this->_setActiveMenu('translator/syncResources');
         $this->_addBreadcrumb(Mage::helper('translator')->__('Sync Resources'), Mage::helper('translator')->__('Sync Resources'));
-        
+
         $form = $this->getLayout()->createBlock('translator/adminhtml_sync');
         $this->_addContent($form);
-        
+
         $messages = $this->getLayout()->createBlock('core/text');
-        
+
         $status = $this->getRequest()->getParam('status');
         switch ($status) {
             case 'importCsvFiles':
-                
+
                 $sync = Mage::helper('translator/sync');
                 $sync->init($sync->getAction('CSV_SCAN_ACTION'));
                 Mage::helper('translator/importer')->pushCsvFilesToQueue();
                 $messages->setText('<div id="sync-messages"></div>');
-                
+
                 $head = $this->getLayout()->getBlock('head');
                 $head->addJs('wheelbarrow/sync.js');
                 break;
             case 'importCsvFile':
 
                     $messages->setText('<div id="sync-messages"></div>');
-                     
+
                     $head = $this->getLayout()->getBlock('head');
                     $head->addJs('wheelbarrow/sync.js');
                     break;
             case 'importThemeCsvs':
-                
+
                 $sync = Mage::helper('translator/sync');
                 $sync->init($sync->getAction('THEME_SCAN_ACTION'));
                 Mage::helper('translator/importer')->pushThemeCsvsToQueue();
-                 
+
                 $messages->setText('<div id="sync-messages"></div>');
-                 
+
                 $head = $this->getLayout()->getBlock('head');
                 $head->addJs('wheelbarrow/sync.js');
                 break;
-            
+
             case 'migrateCoreDb':
                 Mage::getModel('translator/translate')->migrateCoreDb();
 
                 $messages->setText('<div id="sync-messages">Migration Complete. Please check the translations manager page for changes.</div>');
                 break;
         }
-        
+
         $this->_addContent($messages);
-        
+
         $grid = $this->getLayout()->createBlock('translator/adminhtml_sources');
         $this->_addContent($grid);
-        
+
         $this->renderLayout();
     }
-    
+
     public function scanResourcesAction() {
         $collection = Mage::getModel('translator/cache')->getCollection()->addFieldToFilter('name', 'resource');
         foreach ($collection as $row) {
@@ -392,18 +392,18 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         $collection->save();
         $this->_redirect('*/*/syncResources');
     }
-    
+
     public function syncResourceAction() {
-        
+
         $id = $this->getRequest()->getParam('id');
-        
+
         $item = unserialize(Mage::getModel('translator/cache')->load($id)->getRegister());
         $pairs = Mage::helper('translator/importer')->_processCsvFile($item);
         $batches = array_chunk($pairs, Mage::getStoreConfig('translator/options/batch_size'));
         foreach ($batches as $batch) {
             Mage::getModel('translator/cache')->createItem('batch', $batch);
         }
-        
+
         $sync = Mage::helper('translator/sync');
         $sync->init($sync->getAction('CSV_SCAN_ACTION'));
         Mage::helper('translator/sync')->setRegisterData(array(
@@ -414,7 +414,7 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         Mage::getModel('translator/cache')->load($id)->setRegister(serialize($item))->save();
         $this->_redirect('*/*/syncResources/status/importCsvFile');
     }
-    
+
     public function clearCacheAction() {
         $collection = Mage::getModel('translator/cache')->getCollection()->addFieldToFilter('name', 'batch');
         foreach ($collection as $row) {
@@ -422,14 +422,14 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         }
         $this->_redirect('*/*/syncResources');
     }
-    
+
     public function syncAction() {
         if ($this->getRequest()->getParam('stopFlag') != 'false') {
             $register = Mage::helper('translator/sync')->getRegister();
             $register['state'] = false;
             Mage::helper('translator/sync')->setRegister($register);
         }
-        
+
         $output = Mage::helper('translator/sync')->iterator();
         $this->getResponse()->setBody(json_encode($output));
     }
@@ -438,10 +438,10 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
         $this->loadLayout();
         $this->_setActiveMenu('translator/pagescan');
         $this->_addBreadcrumb(Mage::helper('translator')->__('Scan A Page'), Mage::helper('translator')->__('Scan A Page'));
-    
+
         $form = $this->getLayout()->createBlock('translator/adminhtml_pagescan');
         $this->_addContent($form);
-    
+
         $head = $this->getLayout()->getBlock('head');
         $status = $this->getRequest()->getParam('status');
         if ($status == "1")
@@ -451,20 +451,20 @@ class Wheelbarrow_Translator_Adminhtml_TranslatorController extends Mage_Adminht
             $this->_addContent($messages);
             $head->addJs('wheelbarrow/sync.js');
         }
-    
+
         $this->renderLayout();
     }
-    
+
     public function pageScanCallbackAction() {
         $data = $this->getRequest()->getPost();
-    
+
         $sync = Mage::helper('translator/sync');
         $sync->init($sync->getAction('PATH_SCAN_ACTION'), array(
                 'go_to_url' => true,
                 'path' => $data['path'],
                 'message' => ''
         ));
-    
+
         $this->_redirect('*/*/pagescan/status/1');
     }
 }

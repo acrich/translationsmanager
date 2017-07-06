@@ -3,7 +3,7 @@
 class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
 {
     const CSV_SEPARATOR = ',';
-    
+
     /**
      * 
      * Gets a list of locale codes used within store views.
@@ -43,7 +43,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
         }
         return $data;
     }
-    
+
     /**
      * 
      * Creates an array of items prepared for the db's string and translation tables.
@@ -60,7 +60,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
         $data = array();
         if (file_exists($file_description['fileName'])) {
             $translation_pairs = $this->_getFileData($file_description['fileName']);
-            
+
             //@todo remove the fileName if it isn't necessary in there.
             //@todo find a better solution for handling areas, such as always submitting it.
             foreach ($translation_pairs as $string => $translation) {
@@ -77,7 +77,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
         }
         return $data;
     }
-    
+
     /**
      * 
      * Creates a list of translation CSV files from each combination of area and module.
@@ -98,7 +98,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
                             if (!isset($files[$file])) {
                                 $files[$file] = array('modules' => array(), 'areas' => array());
                             }
-                            
+
                             $files[$file]['modules'][$moduleName] = $moduleName;
                             
                             if (!isset($files[$file]['areas'][$moduleName])) {
@@ -112,7 +112,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
         }
         return $files;
     }
-    
+
     /**
      * 
      * Creates a list of translations pairs, and saves them into batches.
@@ -124,7 +124,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
         $locales = $this->_getLocales();
         $basedir = Mage::getBaseDir('locale');
         $data = array();
-        
+
         //Checking each locale if its folder exists in the file system.
         foreach ($locales as $locale) {
             if (file_exists(Mage::getBaseDir('locale') . DS . $locale)) {
@@ -144,22 +144,22 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
                 }
             }
         }
-        
+
         //@todo move the batch formation to a sync or batch helper function.
         $batches = array_chunk($data, Mage::getStoreConfig('translator/options/batch_size'));
         foreach ($batches as $batch) {
             Mage::getModel('translator/cache')->createItem('batch', $batch);
         }
-        
+
         //@todo maybe a wrapper function for this.
         Mage::helper('translator/sync')->setRegisterData(array(
                 'completed' => 0, 
                 'total' => count($data)
         ));
-        
+
         //@todo add a return value.
     }
-    
+
     /**
      * 
      * Creates a list of translation files for the resources table in the admin panel.
@@ -197,7 +197,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
         }
         return $data;
     }
-    
+
     /**
      * 
      * Imitates Mage_Core's process of looking for theme translation files for each area and locale,
@@ -245,7 +245,7 @@ class Wheelbarrow_Translator_Helper_Importer extends Mage_Core_Helper_Abstract
                     $locale;
 
                     $file = $dir . DS . 'translate.csv';
-                    
+
                     if (!file_exists($file)) {
                         if ($area == 'frontend') {
                             //@todo check if you can use the constants instead of static values.
